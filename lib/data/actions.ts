@@ -28,6 +28,7 @@ function taskInputFromForm(formData: FormData) {
 function branchInputFromForm(formData: FormData) {
   return {
     title: getString(formData, "title"),
+    tag: getString(formData, "tag"),
     parentId: getNullableString(formData, "parentId"),
     status: getNullableString(formData, "status"),
   }

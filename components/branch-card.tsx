@@ -5,6 +5,7 @@ import { getChildren } from "@/lib/data/tree"
 import { BranchCounts } from "@/components/branch-counts"
 import { BranchForm } from "@/components/branch-form"
 import { BranchStatusDot } from "@/components/status-badge"
+import { BranchTag } from "@/components/branch-tag"
 import { Card } from "@/components/ui"
 import { DialogButton } from "@/components/dialog-button"
 import type { AppData, Branch } from "@/types"
@@ -20,6 +21,7 @@ export function BranchCard({ branch, data }: { branch: Branch; data: AppData }) 
           <div className="flex items-center gap-2">
             <Folder className="size-4 text-blue-600" />
             <h2 className="truncate font-semibold">{branch.title}</h2>
+            <BranchTag tag={branch.tag} />
             <BranchStatusDot status={branch.status} />
           </div>
           <div className="mt-3">
@@ -63,6 +65,7 @@ function BranchTreeNode({ branch, data }: { branch: Branch; data: AppData }) {
       <Link href={`/branches/${branch.id}`} className="rounded-md px-2 py-2 hover:bg-muted">
         <div className="flex items-center gap-2 text-sm font-medium">
           <span>{branch.title}</span>
+          <BranchTag tag={branch.tag} />
           <BranchStatusDot status={branch.status} />
         </div>
         <div className="mt-1">

@@ -28,6 +28,10 @@ export function BranchForm({
         <Input name="title" required defaultValue={branch?.title ?? ""} />
       </Label>
       <Label>
+        Короткий тег
+        <Input name="tag" maxLength={12} defaultValue={branch?.tag ?? ""} placeholder="Например: MVP" />
+      </Label>
+      <Label>
         Родительская ветка
         <Select name="parentId" defaultValue={branch?.parentId ?? defaultParentId ?? ""}>
           <option value="">Корневое направление</option>

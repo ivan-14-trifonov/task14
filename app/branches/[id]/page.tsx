@@ -4,6 +4,7 @@ import { Pencil, Plus } from "lucide-react"
 import { AppShell } from "@/components/app-shell"
 import { BranchCounts } from "@/components/branch-counts"
 import { BranchForm } from "@/components/branch-form"
+import { BranchTag } from "@/components/branch-tag"
 import { ConfirmDialog } from "@/components/confirm-dialog"
 import { DialogButton } from "@/components/dialog-button"
 import { BranchStatusDot } from "@/components/status-badge"
@@ -52,14 +53,19 @@ export default async function BranchPage({
               {path.map((item) => (
                 <span key={item.id} className="flex items-center gap-1">
                   <span>/</span>
-                  <Link href={`/branches/${item.id}`} className="rounded-sm hover:text-foreground hover:underline">
-                    {item.title}
+                  <Link
+                    href={`/branches/${item.id}`}
+                    className="flex items-center gap-1 rounded-sm hover:text-foreground hover:underline"
+                  >
+                    <span>{item.title}</span>
+                    <BranchTag tag={item.tag} />
                   </Link>
                 </span>
               ))}
             </div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-semibold">{branch.title}</h1>
+              <BranchTag tag={branch.tag} />
               <BranchStatusDot status={branch.status} />
             </div>
             <div className="mt-3">
@@ -128,6 +134,7 @@ export default async function BranchPage({
                         <div className="flex items-center gap-2 font-medium">
                           <BranchStatusDot status={child.status} />
                           {child.title}
+                          <BranchTag tag={child.tag} />
                         </div>
                         <div className="mt-2">
                           <BranchCounts inProgress={childCounts.inProgress} planned={childCounts.planned} />

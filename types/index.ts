@@ -4,6 +4,7 @@ export type TaskStatus = "in_progress" | "planned" | "done"
 export type Branch = {
   id: string
   title: string
+  tag: string
   parentId: string | null
   status: BranchStatus
   sort: number
