@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { notFound } from "next/navigation"
 import { Pencil, Plus } from "lucide-react"
 import { AppShell } from "@/components/app-shell"
@@ -43,11 +44,16 @@ export default async function BranchPage({
       <section className="grid gap-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <div className="mb-2 flex flex-wrap gap-1 text-sm text-muted-foreground">
-              {path.map((item, index) => (
-                <span key={item.id}>
-                  {index ? " / " : ""}
-                  {item.title}
+            <div className="mb-2 flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
+              <Link href="/" className="rounded-sm hover:text-foreground hover:underline">
+                Дерево
+              </Link>
+              {path.map((item) => (
+                <span key={item.id} className="flex items-center gap-1">
+                  <span>/</span>
+                  <Link href={`/branches/${item.id}`} className="rounded-sm hover:text-foreground hover:underline">
+                    {item.title}
+                  </Link>
                 </span>
               ))}
             </div>

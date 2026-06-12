@@ -45,22 +45,37 @@ export function BranchCard({ branch, data }: { branch: Branch; data: AppData }) 
       </div>
       {children.length ? (
         <div className="mt-4 grid gap-2 border-l pl-4">
-          {children.map((child) => {
-            const childCounts = getBranchTaskCounts(child.id, data)
-            return (
-              <Link key={child.id} href={`/branches/${child.id}`} className="rounded-md px-2 py-2 hover:bg-muted">
-                <div className="flex items-center gap-2 text-sm font-medium">
-                  <span>{child.title}</span>
-                  <BranchStatusDot status={child.status} />
-                </div>
-                <div className="mt-1 text-xs text-muted-foreground">
-                  В работе: {childCounts.inProgress} · В плане: {childCounts.planned}
-                </div>
-              </Link>
-            )
-          })}
+          {children.map((child) => (
+            <BranchTreeNode key={child.id} branch={child} data={data} />
+          ))}
         </div>
       ) : null}
     </Card>
+  )
+}
+
+function BranchTreeNode({ branch, data }: { branch: Branch; data: AppData }) {
+  const children = getChildren(data, branch.id)
+  const counts = getBranchTaskCounts(branch.id, data)
+
+  return (
+    <div className="grid gap-2">
+      <Link href={`/branches/${branch.id}`} className="rounded-md px-2 py-2 hover:bg-muted">
+        <div className="flex items-center gap-2 text-sm font-medium">
+          <span>{branch.title}</span>
+          <BranchStatusDot status={branch.status} />
+        </div>
+        <div className="mt-1 text-xs text-muted-foreground">
+          В работе: {counts.inProgress} · В плане: {counts.planned}
+        </div>
+      </Link>
+      {children.length ? (
+        <div className="ml-3 grid gap-2 border-l pl-3">
+          {children.map((child) => (
+            <BranchTreeNode key={child.id} branch={child} data={data} />
+          ))}
+        </div>
+      ) : null}
+    </div>
   )
 }

@@ -14,7 +14,7 @@ export function TreeOverview({ data }: { data: AppData }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">Дерево</h1>
-          <p className="text-sm text-muted-foreground">Корневые направления и первый уровень вложенности.</p>
+          <p className="text-sm text-muted-foreground">Все направления со всей вложенностью.</p>
         </div>
         <DialogButton
           title="Новая ветка"
