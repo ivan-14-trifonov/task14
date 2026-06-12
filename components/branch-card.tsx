@@ -2,6 +2,7 @@ import Link from "next/link"
 import { Folder, Pencil, Plus } from "lucide-react"
 import { getBranchTaskCounts } from "@/lib/data/counts"
 import { getChildren } from "@/lib/data/tree"
+import { BranchCounts } from "@/components/branch-counts"
 import { BranchForm } from "@/components/branch-form"
 import { BranchStatusDot } from "@/components/status-badge"
 import { Card } from "@/components/ui"
@@ -21,9 +22,8 @@ export function BranchCard({ branch, data }: { branch: Branch; data: AppData }) 
             <h2 className="truncate font-semibold">{branch.title}</h2>
             <BranchStatusDot status={branch.status} />
           </div>
-          <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
-            <span className="rounded-md bg-red-50 px-2 py-1 text-red-700">В работе: {counts.inProgress}</span>
-            <span className="rounded-md bg-slate-100 px-2 py-1 text-slate-700">В плане: {counts.planned}</span>
+          <div className="mt-3">
+            <BranchCounts inProgress={counts.inProgress} planned={counts.planned} />
           </div>
         </Link>
         <div className="flex gap-1">
@@ -65,8 +65,8 @@ function BranchTreeNode({ branch, data }: { branch: Branch; data: AppData }) {
           <span>{branch.title}</span>
           <BranchStatusDot status={branch.status} />
         </div>
-        <div className="mt-1 text-xs text-muted-foreground">
-          В работе: {counts.inProgress} · В плане: {counts.planned}
+        <div className="mt-1">
+          <BranchCounts inProgress={counts.inProgress} planned={counts.planned} compact />
         </div>
       </Link>
       {children.length ? (

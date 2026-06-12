@@ -2,6 +2,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { Pencil, Plus } from "lucide-react"
 import { AppShell } from "@/components/app-shell"
+import { BranchCounts } from "@/components/branch-counts"
 import { BranchForm } from "@/components/branch-form"
 import { ConfirmDialog } from "@/components/confirm-dialog"
 import { DialogButton } from "@/components/dialog-button"
@@ -61,9 +62,8 @@ export default async function BranchPage({
               <h1 className="text-2xl font-semibold">{branch.title}</h1>
               <BranchStatusDot status={branch.status} />
             </div>
-            <div className="mt-3 flex flex-wrap gap-2 text-xs">
-              <span className="rounded-md bg-red-50 px-2 py-1 text-red-700">В работе: {branchCounts.inProgress}</span>
-              <span className="rounded-md bg-slate-100 px-2 py-1 text-slate-700">В плане: {branchCounts.planned}</span>
+            <div className="mt-3">
+              <BranchCounts inProgress={branchCounts.inProgress} planned={branchCounts.planned} />
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -129,13 +129,8 @@ export default async function BranchPage({
                           <BranchStatusDot status={child.status} />
                           {child.title}
                         </div>
-                        <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                          <span className="rounded-md bg-red-50 px-2 py-1 text-red-700">
-                            В работе: {childCounts.inProgress}
-                          </span>
-                          <span className="rounded-md bg-slate-100 px-2 py-1 text-slate-700">
-                            В плане: {childCounts.planned}
-                          </span>
+                        <div className="mt-2">
+                          <BranchCounts inProgress={childCounts.inProgress} planned={childCounts.planned} />
                         </div>
                       </div>
                       <LinkButton href={`/branches/${child.id}`} variant="ghost">
