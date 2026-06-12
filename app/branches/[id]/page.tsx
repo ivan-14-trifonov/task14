@@ -10,6 +10,7 @@ import { TaskList } from "@/components/task-list"
 import { Card, LinkButton } from "@/components/ui"
 import { requireAdmin } from "@/lib/auth"
 import { deleteBranchAction } from "@/lib/data/actions"
+import { getBranchTaskCounts } from "@/lib/data/counts"
 import { getDataForPage, getFilteredTasks } from "@/lib/data/queries"
 import { getBranchPath, getChildren } from "@/lib/data/tree"
 
@@ -28,6 +29,7 @@ export default async function BranchPage({
   if (!branch) notFound()
 
   const children = getChildren(data, id)
+  const branchCounts = getBranchTaskCounts(id, data)
   const tasks = getFilteredTasks(data, { status: "all", branchId: id, includeDescendants: false }).filter(
     (task) => task.status !== "done",
   )
@@ -52,6 +54,10 @@ export default async function BranchPage({
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-semibold">{branch.title}</h1>
               <BranchStatusDot status={branch.status} />
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2 text-xs">
+              <span className="rounded-md bg-red-50 px-2 py-1 text-red-700">В работе: {branchCounts.inProgress}</span>
+              <span className="rounded-md bg-slate-100 px-2 py-1 text-slate-700">В плане: {branchCounts.planned}</span>
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -107,19 +113,32 @@ export default async function BranchPage({
           <h2 className="text-lg font-semibold">Подветки</h2>
           {children.length ? (
             <div className="grid gap-3 md:grid-cols-2">
-              {children.map((child) => (
-                <Card key={child.id} className="p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2 font-medium">
-                      <BranchStatusDot status={child.status} />
-                      {child.title}
+              {children.map((child) => {
+                const childCounts = getBranchTaskCounts(child.id, data)
+                return (
+                  <Card key={child.id} className="p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-2 font-medium">
+                          <BranchStatusDot status={child.status} />
+                          {child.title}
+                        </div>
+                        <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                          <span className="rounded-md bg-red-50 px-2 py-1 text-red-700">
+                            В работе: {childCounts.inProgress}
+                          </span>
+                          <span className="rounded-md bg-slate-100 px-2 py-1 text-slate-700">
+                            В плане: {childCounts.planned}
+                          </span>
+                        </div>
+                      </div>
+                      <LinkButton href={`/branches/${child.id}`} variant="ghost">
+                        Открыть
+                      </LinkButton>
                     </div>
-                    <LinkButton href={`/branches/${child.id}`} variant="ghost">
-                      Открыть
-                    </LinkButton>
-                  </div>
-                </Card>
-              ))}
+                  </Card>
+                )
+              })}
             </div>
           ) : (
             <Card className="p-4 text-sm text-muted-foreground">Подветок пока нет.</Card>

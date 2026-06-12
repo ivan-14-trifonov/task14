@@ -6,6 +6,13 @@ const DATA_KEY = "tasks-data.json"
 const BACKUP_PREFIX = "backups/tasks-data-"
 const MAX_BACKUPS = 20
 
+function blobCommandOptions() {
+  return {
+    storeId: process.env.BLOB_STORE_ID,
+    token: process.env.BLOB_READ_WRITE_TOKEN,
+  }
+}
+
 export class DataValidationError extends Error {
   constructor(message = "Файл данных повреждён или не соответствует схеме. Автоматическая запись остановлена, чтобы не потерять данные.") {
     super(message)
@@ -33,7 +40,7 @@ function emptyData(now = new Date().toISOString()): AppData {
 }
 
 async function readBlobText(pathname: string) {
-  const blob = await get(pathname, { access: "private", useCache: false })
+  const blob = await get(pathname, { ...blobCommandOptions(), access: "private", useCache: false })
   if (!blob?.stream) return null
   return new Response(blob.stream).text()
 }
@@ -66,6 +73,7 @@ async function writeRawData(data: AppData, withBackup: boolean) {
   }
 
   await put(DATA_KEY, JSON.stringify(parsed.data, null, 2), {
+    ...blobCommandOptions(),
     access: "private",
     contentType: "application/json",
     allowOverwrite: true,
@@ -77,6 +85,7 @@ async function backupCurrentData() {
   if (!body) return
   const stamp = new Date().toISOString().replace(/[:T]/g, "-").slice(0, 19)
   await put(`${BACKUP_PREFIX}${stamp}.json`, body, {
+    ...blobCommandOptions(),
     access: "private",
     contentType: "application/json",
     allowOverwrite: false,
@@ -85,12 +94,12 @@ async function backupCurrentData() {
 }
 
 async function pruneBackups() {
-  const result = await list({ prefix: BACKUP_PREFIX, limit: 100 })
+  const result = await list({ ...blobCommandOptions(), prefix: BACKUP_PREFIX, limit: 100 })
   const backups = result.blobs
     .filter((blob) => blob.pathname.startsWith(BACKUP_PREFIX))
     .sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime())
 
-  await Promise.all(backups.slice(MAX_BACKUPS).map((blob) => del(blob.url)))
+  await Promise.all(backups.slice(MAX_BACKUPS).map((blob) => del(blob.pathname, blobCommandOptions())))
 }
 
 export async function writeData(data: AppData): Promise<AppData> {
