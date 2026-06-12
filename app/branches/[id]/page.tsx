@@ -57,8 +57,7 @@ export default async function BranchPage({
                     href={`/branches/${item.id}`}
                     className="flex items-center gap-1 rounded-sm hover:text-foreground hover:underline"
                   >
-                    <span>{item.title}</span>
-                    <BranchTag tag={item.tag} />
+                    {item.title}
                   </Link>
                 </span>
               ))}

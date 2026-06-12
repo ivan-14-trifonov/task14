@@ -29,7 +29,7 @@ export function BranchForm({
       </Label>
       <Label>
         Короткий тег
-        <Input name="tag" maxLength={12} defaultValue={branch?.tag ?? ""} placeholder="Например: MVP" />
+        <Input name="tag" maxLength={24} defaultValue={branch?.tag ?? ""} placeholder="Например: MVP" />
       </Label>
       <Label>
         Родительская ветка

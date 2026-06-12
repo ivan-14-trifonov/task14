@@ -6,7 +6,7 @@ export const taskStatusSchema = z.enum(["in_progress", "planned", "done"])
 export const branchSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1),
-  tag: z.string().max(12).optional().default(""),
+  tag: z.string().max(24).optional().default(""),
   parentId: z.string().min(1).nullable(),
   status: branchStatusSchema,
   sort: z.number(),
@@ -45,7 +45,7 @@ export const taskInputSchema = z.object({
 
 export const branchInputSchema = z.object({
   title: z.string().trim().min(1, "Укажите название"),
-  tag: z.string().trim().max(12, "Тег должен быть короче 12 символов").default(""),
+  tag: z.string().trim().max(24, "Тег должен быть короче 24 символов").default(""),
   parentId: z.string().nullable(),
   status: branchStatusSchema,
 })
