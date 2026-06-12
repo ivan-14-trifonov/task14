@@ -9,6 +9,8 @@ export function BranchCounts({
   planned: number
   compact?: boolean
 }) {
+  if (inProgress === 0 && planned === 0) return null
+
   const itemClass = compact ? "inline-flex items-center gap-1" : "inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-1"
 
   return (
