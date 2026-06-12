@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { Folder, Pencil, Plus } from "lucide-react"
-import { getBranchTaskCounts } from "@/lib/data/counts"
+import { getDirectBranchTaskCounts } from "@/lib/data/counts"
 import { getChildren } from "@/lib/data/tree"
 import { BranchCounts } from "@/components/branch-counts"
 import { BranchForm } from "@/components/branch-form"
@@ -12,7 +12,7 @@ import type { AppData, Branch } from "@/types"
 
 export function BranchCard({ branch, data }: { branch: Branch; data: AppData }) {
   const children = getChildren(data, branch.id)
-  const counts = getBranchTaskCounts(branch.id, data)
+  const counts = getDirectBranchTaskCounts(branch.id, data)
 
   return (
     <Card className="p-4">
@@ -58,7 +58,7 @@ export function BranchCard({ branch, data }: { branch: Branch; data: AppData }) 
 
 function BranchTreeNode({ branch, data }: { branch: Branch; data: AppData }) {
   const children = getChildren(data, branch.id)
-  const counts = getBranchTaskCounts(branch.id, data)
+  const counts = getDirectBranchTaskCounts(branch.id, data)
 
   return (
     <div className="grid gap-2">
