@@ -71,6 +71,18 @@ export async function restoreTaskAction(formData: FormData) {
   refresh()
 }
 
+export async function markTaskWorkedTodayAction(formData: FormData) {
+  await requireAdmin()
+  await mutations.changeTaskDailyStatus(getString(formData, "id"), "worked")
+  refresh()
+}
+
+export async function closeTaskForTodayAction(formData: FormData) {
+  await requireAdmin()
+  await mutations.changeTaskDailyStatus(getString(formData, "id"), "closed")
+  refresh()
+}
+
 export async function createBranchAction(formData: FormData) {
   await requireAdmin()
   const data = await mutations.createBranch(branchInputFromForm(formData))

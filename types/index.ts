@@ -1,5 +1,6 @@
 export type BranchStatus = "in_progress" | null
 export type TaskStatus = "in_progress" | "planned" | "done"
+export type TaskDailyStatus = "worked" | "closed"
 
 export type Branch = {
   id: string
@@ -22,6 +23,10 @@ export type Task = {
   createdAt: string
   updatedAt: string
   completedAt: string | null
+  dailyStatus: {
+    date: string
+    status: TaskDailyStatus
+  } | null
 }
 
 export type AppData = {

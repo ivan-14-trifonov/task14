@@ -2,6 +2,7 @@ import { z } from "zod"
 
 export const branchStatusSchema = z.union([z.literal("in_progress"), z.null()])
 export const taskStatusSchema = z.enum(["in_progress", "planned", "done"])
+export const taskDailyStatusSchema = z.enum(["worked", "closed"])
 
 export const branchSchema = z.object({
   id: z.string().min(1),
@@ -24,6 +25,14 @@ export const taskSchema = z.object({
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
   completedAt: z.string().datetime().nullable(),
+  dailyStatus: z
+    .object({
+      date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      status: taskDailyStatusSchema,
+    })
+    .nullable()
+    .optional()
+    .default(null),
 })
 
 export const appDataSchema = z.object({

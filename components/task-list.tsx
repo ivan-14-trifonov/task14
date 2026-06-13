@@ -5,6 +5,7 @@ import { ConfirmDialog } from "@/components/confirm-dialog"
 import { DialogButton } from "@/components/dialog-button"
 import { StatusBadge } from "@/components/status-badge"
 import { Button, Card } from "@/components/ui"
+import { TaskDailyControls } from "@/components/task-daily-controls"
 import { TaskForm } from "@/components/task-form"
 import type { AppData, Task } from "@/types"
 
@@ -24,6 +25,7 @@ export function TaskList({ data, tasks, archive = false }: { data: AppData; task
                 <StatusBadge status={task.status} />
               </div>
               {task.description ? <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">{task.description}</p> : null}
+              {!archive ? <TaskDailyControls task={task} /> : null}
               <p className="mt-3 text-xs text-muted-foreground">
                 {data.branches[task.branchId]?.title ?? "Ветка удалена"} · обновлено {formatDate(task.updatedAt)}
               </p>

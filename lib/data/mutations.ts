@@ -1,5 +1,6 @@
 import { nanoid } from "nanoid"
-import { branchInputSchema, taskInputSchema, taskStatusSchema } from "@/lib/data/schema"
+import { branchInputSchema, taskDailyStatusSchema, taskInputSchema, taskStatusSchema } from "@/lib/data/schema"
+import { getTodayKey } from "@/lib/data/daily"
 import { readData, writeData } from "@/lib/data/storage"
 import { wouldCreateCycle } from "@/lib/data/tree"
 import type { AppData, Branch, Task } from "@/types"
@@ -20,6 +21,7 @@ export async function createTask(input: unknown) {
     createdAt: now,
     updatedAt: now,
     completedAt: values.status === "done" ? now : null,
+    dailyStatus: null,
   }
   return writeData({ ...data, tasks: { ...data.tasks, [task.id]: task } })
 }
@@ -36,6 +38,7 @@ export async function updateTask(id: string, input: unknown) {
     ...values,
     updatedAt: now,
     completedAt: values.status === "done" ? existing.completedAt ?? now : null,
+    dailyStatus: values.status === "in_progress" ? existing.dailyStatus : null,
   }
   return writeData({ ...data, tasks: { ...data.tasks, [id]: task } })
 }
@@ -51,6 +54,25 @@ export async function changeTaskStatus(id: string, status: unknown) {
     status: nextStatus,
     updatedAt: now,
     completedAt: nextStatus === "done" ? existing.completedAt ?? now : null,
+    dailyStatus: nextStatus === "in_progress" ? existing.dailyStatus : null,
+  }
+  return writeData({ ...data, tasks: { ...data.tasks, [id]: task } })
+}
+
+export async function changeTaskDailyStatus(id: string, status: unknown) {
+  const dailyStatus = taskDailyStatusSchema.parse(status)
+  const data = await readData()
+  const existing = data.tasks[id]
+  if (!existing) throw new Error("Задача не найдена")
+  if (existing.status !== "in_progress") throw new Error("Ежедневная отметка доступна только для задач в работе")
+  const now = new Date().toISOString()
+  const task: Task = {
+    ...existing,
+    dailyStatus: {
+      date: getTodayKey(),
+      status: dailyStatus,
+    },
+    updatedAt: now,
   }
   return writeData({ ...data, tasks: { ...data.tasks, [id]: task } })
 }
