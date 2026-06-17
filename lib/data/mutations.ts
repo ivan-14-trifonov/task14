@@ -127,10 +127,19 @@ export async function updateBranch(id: string, input: unknown) {
 export async function deleteBranch(id: string) {
   const data = await readData()
   if (!data.branches[id]) throw new Error("Ветка не найдена")
-  const hasChildren = Object.values(data.branches).some((branch) => branch.parentId === id)
-  const hasTasks = Object.values(data.tasks).some((task) => task.branchId === id)
-  if (hasChildren || hasTasks) {
-    throw new Error("Нельзя удалить ветку, пока в ней есть задачи или подветки")
+  const childrenCount = Object.values(data.branches).filter((branch) => branch.parentId === id).length
+  const branchTasks = Object.values(data.tasks).filter((task) => task.branchId === id)
+  const activeTasksCount = branchTasks.filter((task) => task.status !== "done").length
+  const archivedTasksCount = branchTasks.filter((task) => task.status === "done").length
+  if (childrenCount || branchTasks.length) {
+    const details = [
+      childrenCount ? `подветки: ${childrenCount}` : null,
+      activeTasksCount ? `активные задачи: ${activeTasksCount}` : null,
+      archivedTasksCount ? `задачи в архиве: ${archivedTasksCount}` : null,
+    ]
+      .filter(Boolean)
+      .join(", ")
+    throw new Error(`Нельзя удалить ветку, пока в ней есть задачи или подветки${details ? ` (${details})` : ""}`)
   }
   const branches = { ...data.branches }
   delete branches[id]
