@@ -1,6 +1,7 @@
 import { Save } from "lucide-react"
 import { createBranchAction, updateBranchAction } from "@/lib/data/actions"
 import { getTodayKey } from "@/lib/data/daily"
+import { BranchStatusFields } from "@/components/branch-status-fields"
 import { Button, Input, Label, Select } from "@/components/ui"
 import type { AppData, Branch } from "@/types"
 
@@ -45,28 +46,7 @@ export function BranchForm({
           ))}
         </Select>
       </Label>
-      <Label>
-        Статус
-        <Select name="status" defaultValue={branch?.status ?? ""}>
-          <option value="">Без статуса</option>
-          <option value="in_progress">В работе</option>
-          <option value="paused">На паузе</option>
-          <option value="timing">Тайминг</option>
-        </Select>
-      </Label>
-      <div className="grid gap-3 rounded-md border bg-slate-50 p-3">
-        <p className="text-sm font-medium">Настройки тайминга</p>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Label>
-            Дата старта
-            <Input name="timingStartDate" type="date" defaultValue={timingStartDate} />
-          </Label>
-          <Label>
-            Минут в день
-            <Input name="timingDailyMinutes" type="number" min={1} step={1} defaultValue={timingDailyMinutes} />
-          </Label>
-        </div>
-      </div>
+      <BranchStatusFields defaultStatus={branch?.status ?? null} timingStartDate={timingStartDate} timingDailyMinutes={timingDailyMinutes} />
       <Button type="submit">
         <Save className="size-4" />
         Сохранить
