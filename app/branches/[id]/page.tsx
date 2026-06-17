@@ -41,6 +41,10 @@ export default async function BranchPage({
   const nestedTasks = getFilteredTasks(data, { status: "all", branchId: id, includeDescendants: true }).filter(
     (task) => task.status !== "done" && task.branchId !== id,
   )
+  const archivedTasks = getFilteredTasks(data, { status: "done", branchId: id, includeDescendants: false })
+  const nestedArchivedTasks = getFilteredTasks(data, { status: "done", branchId: id, includeDescendants: true }).filter(
+    (task) => task.branchId !== id,
+  )
   const path = getBranchPath(id, data)
 
   return (
@@ -167,6 +171,18 @@ export default async function BranchPage({
           <div className="grid gap-3">
             <h2 className="text-lg font-semibold">Задачи вложенных веток</h2>
             <TaskList data={data} tasks={nestedTasks} />
+          </div>
+        ) : null}
+
+        <div className="grid gap-3">
+          <h2 className="text-lg font-semibold">Архив этой ветки</h2>
+          <TaskList data={data} tasks={archivedTasks} archive />
+        </div>
+
+        {nestedArchivedTasks.length ? (
+          <div className="grid gap-3">
+            <h2 className="text-lg font-semibold">Архив вложенных веток</h2>
+            <TaskList data={data} tasks={nestedArchivedTasks} archive />
           </div>
         ) : null}
       </section>
