@@ -4,6 +4,7 @@ import { getDirectBranchTaskCounts } from "@/lib/data/counts"
 import { getChildren } from "@/lib/data/tree"
 import { BranchCounts } from "@/components/branch-counts"
 import { BranchForm } from "@/components/branch-form"
+import { BranchTimingBadge } from "@/components/branch-timing-badge"
 import { BranchStatusDot } from "@/components/status-badge"
 import { BranchTag } from "@/components/branch-tag"
 import { Card } from "@/components/ui"
@@ -22,6 +23,7 @@ export function BranchCard({ branch, data }: { branch: Branch; data: AppData }) 
             <Folder className="size-4 text-blue-600" />
             <h2 className="truncate font-semibold">{branch.title}</h2>
             <BranchTag tag={branch.tag} />
+            <BranchTimingBadge branch={branch} />
             <BranchStatusDot status={branch.status} />
           </div>
           <div className="mt-3">
@@ -66,6 +68,7 @@ function BranchTreeNode({ branch, data }: { branch: Branch; data: AppData }) {
         <div className="flex items-center gap-2 text-sm font-medium">
           <span>{branch.title}</span>
           <BranchTag tag={branch.tag} />
+          <BranchTimingBadge branch={branch} compact />
           <BranchStatusDot status={branch.status} />
         </div>
         <div className="mt-1">

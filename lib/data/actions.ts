@@ -31,6 +31,8 @@ function branchInputFromForm(formData: FormData) {
     tag: getString(formData, "tag"),
     parentId: getNullableString(formData, "parentId"),
     status: getNullableString(formData, "status"),
+    timingStartDate: getString(formData, "timingStartDate"),
+    timingDailyMinutes: getString(formData, "timingDailyMinutes"),
   }
 }
 
@@ -113,4 +115,10 @@ export async function deleteBranchAction(formData: FormData) {
   }
   refresh()
   redirect("/")
+}
+
+export async function setBranchTimingMinutesAction(formData: FormData) {
+  await requireAdmin()
+  await mutations.setBranchTimingMinutes(getString(formData, "id"), getString(formData, "minutes"))
+  refresh()
 }

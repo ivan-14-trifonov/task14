@@ -5,6 +5,8 @@ import { AppShell } from "@/components/app-shell"
 import { BranchCounts } from "@/components/branch-counts"
 import { BranchForm } from "@/components/branch-form"
 import { BranchTag } from "@/components/branch-tag"
+import { BranchTimingBadge } from "@/components/branch-timing-badge"
+import { BranchTimingForm } from "@/components/branch-timing-form"
 import { ConfirmDialog } from "@/components/confirm-dialog"
 import { DialogButton } from "@/components/dialog-button"
 import { BranchStatusDot } from "@/components/status-badge"
@@ -65,6 +67,7 @@ export default async function BranchPage({
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-semibold">{branch.title}</h1>
               <BranchTag tag={branch.tag} />
+              <BranchTimingBadge branch={branch} />
               <BranchStatusDot status={branch.status} />
             </div>
             <div className="mt-3">
@@ -120,6 +123,8 @@ export default async function BranchPage({
           <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{query.error}</div>
         ) : null}
 
+        <BranchTimingForm branch={branch} />
+
         <div className="grid gap-3">
           <h2 className="text-lg font-semibold">Подветки</h2>
           {children.length ? (
@@ -134,6 +139,7 @@ export default async function BranchPage({
                           <BranchStatusDot status={child.status} />
                           {child.title}
                           <BranchTag tag={child.tag} />
+                          <BranchTimingBadge branch={child} compact />
                         </div>
                         <div className="mt-2">
                           <BranchCounts inProgress={childCounts.inProgress} planned={childCounts.planned} />

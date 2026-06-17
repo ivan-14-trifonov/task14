@@ -1,4 +1,4 @@
-export type BranchStatus = "in_progress" | null
+export type BranchStatus = "in_progress" | "timing" | null
 export type TaskStatus = "in_progress" | "planned" | "done"
 export type TaskDailyStatus = "worked" | "closed"
 
@@ -8,6 +8,11 @@ export type Branch = {
   tag: string
   parentId: string | null
   status: BranchStatus
+  timing: {
+    startDate: string
+    dailyMinutes: number
+    entries: Record<string, number>
+  } | null
   sort: number
   createdAt: string
   updatedAt: string

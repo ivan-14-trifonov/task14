@@ -93,6 +93,7 @@ export async function createBranch(input: unknown) {
   const branch: Branch = {
     id: nanoid(),
     ...values,
+    timing: values.timing ? { ...values.timing, entries: {} } : null,
     sort: nextSort(Object.values(data.branches).filter((item) => item.parentId === values.parentId)),
     createdAt: now,
     updatedAt: now,
@@ -112,6 +113,12 @@ export async function updateBranch(id: string, input: unknown) {
   const branch: Branch = {
     ...existing,
     ...values,
+    timing: values.timing
+      ? {
+          ...values.timing,
+          entries: existing.timing?.entries ?? {},
+        }
+      : null,
     updatedAt: new Date().toISOString(),
   }
   return writeData({ ...data, branches: { ...data.branches, [id]: branch } })
@@ -128,6 +135,28 @@ export async function deleteBranch(id: string) {
   const branches = { ...data.branches }
   delete branches[id]
   return writeData({ ...data, branches })
+}
+
+export async function setBranchTimingMinutes(id: string, minutes: unknown) {
+  const parsedMinutes = Number(minutes)
+  if (!Number.isFinite(parsedMinutes) || parsedMinutes < 0) throw new Error("Укажите количество минут")
+  const data = await readData()
+  const existing = data.branches[id]
+  if (!existing) throw new Error("Ветка не найдена")
+  if (!existing.timing) throw new Error("Для ветки не настроен тайминг")
+  const today = getTodayKey()
+  const branch: Branch = {
+    ...existing,
+    timing: {
+      ...existing.timing,
+      entries: {
+        ...existing.timing.entries,
+        [today]: Math.round(parsedMinutes),
+      },
+    },
+    updatedAt: new Date().toISOString(),
+  }
+  return writeData({ ...data, branches: { ...data.branches, [id]: branch } })
 }
 
 export async function ensureStarterBranch(data: AppData) {
