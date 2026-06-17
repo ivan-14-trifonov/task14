@@ -146,6 +146,31 @@ export async function deleteBranch(id: string) {
   return writeData({ ...data, branches })
 }
 
+export async function reorderBranches(parentId: string | null, orderedIds: unknown) {
+  if (!Array.isArray(orderedIds) || orderedIds.some((id) => typeof id !== "string")) {
+    throw new Error("Некорректный порядок веток")
+  }
+  const data = await readData()
+  const siblings = Object.values(data.branches).filter((branch) => branch.parentId === parentId)
+  const siblingIds = siblings.map((branch) => branch.id).sort()
+  const nextIds = [...orderedIds].sort()
+
+  if (siblingIds.length !== nextIds.length || siblingIds.some((id, index) => id !== nextIds[index])) {
+    throw new Error("Можно менять порядок только внутри одного уровня веток")
+  }
+
+  const branches = { ...data.branches }
+  orderedIds.forEach((id, index) => {
+    branches[id] = {
+      ...branches[id],
+      sort: index,
+      updatedAt: new Date().toISOString(),
+    }
+  })
+
+  return writeData({ ...data, branches })
+}
+
 export async function setBranchTimingMinutes(id: string, minutes: unknown) {
   const parsedMinutes = Number(minutes)
   if (!Number.isFinite(parsedMinutes) || parsedMinutes < 0) throw new Error("Укажите количество минут")

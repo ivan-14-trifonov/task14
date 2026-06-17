@@ -2,6 +2,7 @@ import { Plus } from "lucide-react"
 import { getChildren } from "@/lib/data/tree"
 import { BranchCard } from "@/components/branch-card"
 import { BranchForm } from "@/components/branch-form"
+import { BranchSortableList } from "@/components/branch-sortable-list"
 import { DialogButton } from "@/components/dialog-button"
 import { Card } from "@/components/ui"
 import type { AppData } from "@/types"
@@ -30,11 +31,11 @@ export function TreeOverview({ data }: { data: AppData }) {
         </DialogButton>
       </div>
       {roots.length ? (
-        <div className="grid gap-4 md:grid-cols-2">
+        <BranchSortableList ids={roots.map((branch) => branch.id)} parentId={null} className="grid gap-4 md:grid-cols-2">
           {roots.map((branch) => (
             <BranchCard key={branch.id} branch={branch} data={data} />
           ))}
-        </div>
+        </BranchSortableList>
       ) : (
         <Card className="p-6 text-sm text-muted-foreground">Дерево пустое. Создайте первое направление.</Card>
       )}

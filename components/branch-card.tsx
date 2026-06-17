@@ -4,6 +4,7 @@ import { getDirectBranchTaskCounts } from "@/lib/data/counts"
 import { getChildren } from "@/lib/data/tree"
 import { BranchCounts } from "@/components/branch-counts"
 import { BranchForm } from "@/components/branch-form"
+import { BranchSortableList } from "@/components/branch-sortable-list"
 import { BranchTimingBadge } from "@/components/branch-timing-badge"
 import { BranchStatusDot } from "@/components/status-badge"
 import { BranchTag } from "@/components/branch-tag"
@@ -48,11 +49,11 @@ export function BranchCard({ branch, data }: { branch: Branch; data: AppData }) 
         </div>
       </div>
       {children.length ? (
-        <div className="mt-4 grid gap-2 border-l pl-4">
+        <BranchSortableList ids={children.map((child) => child.id)} parentId={branch.id} className="mt-4 grid gap-2 border-l pl-4">
           {children.map((child) => (
             <BranchTreeNode key={child.id} branch={child} data={data} />
           ))}
-        </div>
+        </BranchSortableList>
       ) : null}
     </Card>
   )
@@ -76,11 +77,11 @@ function BranchTreeNode({ branch, data }: { branch: Branch; data: AppData }) {
         </div>
       </Link>
       {children.length ? (
-        <div className="ml-3 grid gap-2 border-l pl-3">
+        <BranchSortableList ids={children.map((child) => child.id)} parentId={branch.id} className="ml-3 grid gap-2 border-l pl-3">
           {children.map((child) => (
             <BranchTreeNode key={child.id} branch={child} data={data} />
           ))}
-        </div>
+        </BranchSortableList>
       ) : null}
     </div>
   )

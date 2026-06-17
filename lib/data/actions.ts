@@ -121,3 +121,11 @@ export async function setBranchTimingMinutesAction(formData: FormData) {
   await mutations.setBranchTimingMinutes(getString(formData, "id"), getString(formData, "minutes"))
   refresh()
 }
+
+export async function reorderBranchesAction(formData: FormData) {
+  await requireAdmin()
+  const parentId = getNullableString(formData, "parentId")
+  const orderedIds = JSON.parse(getString(formData, "orderedIds"))
+  await mutations.reorderBranches(parentId, orderedIds)
+  refresh()
+}
