@@ -50,6 +50,7 @@ export function BranchForm({
         <Select name="status" defaultValue={branch?.status ?? ""}>
           <option value="">Без статуса</option>
           <option value="in_progress">В работе</option>
+          <option value="paused">На паузе</option>
           <option value="timing">Тайминг</option>
         </Select>
       </Label>

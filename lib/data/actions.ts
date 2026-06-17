@@ -122,6 +122,18 @@ export async function setBranchTimingMinutesAction(formData: FormData) {
   refresh()
 }
 
+export async function pauseBranchAction(formData: FormData) {
+  await requireAdmin()
+  await mutations.setBranchPaused(getString(formData, "id"), true)
+  refresh()
+}
+
+export async function resumeBranchAction(formData: FormData) {
+  await requireAdmin()
+  await mutations.setBranchPaused(getString(formData, "id"), false)
+  refresh()
+}
+
 export async function reorderBranchesAction(formData: FormData) {
   await requireAdmin()
   const parentId = getNullableString(formData, "parentId")

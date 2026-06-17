@@ -42,6 +42,7 @@ export function TaskForm({
       <Label>
         Статус
         <Select name="status" required defaultValue={task?.status ?? "planned"}>
+          {task?.status === "paused" ? <option value="paused">На паузе</option> : null}
           <option value="in_progress">В работе</option>
           <option value="planned">В плане</option>
           <option value="done">Выполнено</option>

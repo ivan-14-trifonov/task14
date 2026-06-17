@@ -2,21 +2,51 @@ import { nanoid } from "nanoid"
 import { branchInputSchema, taskDailyStatusSchema, taskInputSchema, taskStatusSchema } from "@/lib/data/schema"
 import { getTodayKey } from "@/lib/data/daily"
 import { readData, writeData } from "@/lib/data/storage"
-import { wouldCreateCycle } from "@/lib/data/tree"
+import { getDescendantBranchIds, wouldCreateCycle } from "@/lib/data/tree"
 import type { AppData, Branch, Task } from "@/types"
 
 function nextSort(items: Array<{ sort: number }>) {
   return items.length ? Math.max(...items.map((item) => item.sort)) + 1 : 0
 }
 
+function applyBranchPauseToTasks(data: AppData, branchId: string, paused: boolean) {
+  const branchIds = new Set(getDescendantBranchIds(branchId, data))
+  const now = new Date().toISOString()
+  const tasks = { ...data.tasks }
+
+  for (const task of Object.values(tasks)) {
+    if (!branchIds.has(task.branchId)) continue
+    if (paused && task.status === "in_progress") {
+      tasks[task.id] = { ...task, status: "paused", dailyStatus: null, updatedAt: now }
+    }
+    if (!paused && task.status === "paused") {
+      tasks[task.id] = { ...task, status: "in_progress", updatedAt: now }
+    }
+  }
+
+  return tasks
+}
+
+function isBranchPaused(data: AppData, branchId: string) {
+  let current: Branch | undefined = data.branches[branchId]
+  while (current) {
+    if (current.status === "paused") return true
+    current = current.parentId ? data.branches[current.parentId] : undefined
+  }
+  return false
+}
+
 export async function createTask(input: unknown) {
   const values = taskInputSchema.parse(input)
+  if (values.status === "paused") throw new Error("Статус «На паузе» нельзя поставить вручную")
   const data = await readData()
   if (!data.branches[values.branchId]) throw new Error("Выбранная ветка не найдена")
   const now = new Date().toISOString()
+  const status = values.status === "in_progress" && isBranchPaused(data, values.branchId) ? "paused" : values.status
   const task: Task = {
     id: nanoid(),
     ...values,
+    status,
     sort: nextSort(Object.values(data.tasks).filter((item) => item.branchId === values.branchId)),
     createdAt: now,
     updatedAt: now,
@@ -31,20 +61,31 @@ export async function updateTask(id: string, input: unknown) {
   const data = await readData()
   const existing = data.tasks[id]
   if (!existing) throw new Error("Задача не найдена")
+  if (values.status === "paused" && existing.status !== "paused") {
+    throw new Error("Статус «На паузе» нельзя поставить вручную")
+  }
   if (!data.branches[values.branchId]) throw new Error("Выбранная ветка не найдена")
   const now = new Date().toISOString()
+  const status =
+    values.status === "in_progress" && isBranchPaused(data, values.branchId)
+      ? "paused"
+      : values.status === "paused" && !isBranchPaused(data, values.branchId)
+        ? "in_progress"
+        : values.status
   const task: Task = {
     ...existing,
     ...values,
+    status,
     updatedAt: now,
-    completedAt: values.status === "done" ? existing.completedAt ?? now : null,
-    dailyStatus: values.status === "in_progress" ? existing.dailyStatus : null,
+    completedAt: status === "done" ? existing.completedAt ?? now : null,
+    dailyStatus: status === "in_progress" ? existing.dailyStatus : null,
   }
   return writeData({ ...data, tasks: { ...data.tasks, [id]: task } })
 }
 
 export async function changeTaskStatus(id: string, status: unknown) {
   const nextStatus = taskStatusSchema.parse(status)
+  if (nextStatus === "paused") throw new Error("Статус «На паузе» нельзя поставить вручную")
   const data = await readData()
   const existing = data.tasks[id]
   if (!existing) throw new Error("Задача не найдена")
@@ -121,7 +162,29 @@ export async function updateBranch(id: string, input: unknown) {
       : null,
     updatedAt: new Date().toISOString(),
   }
-  return writeData({ ...data, branches: { ...data.branches, [id]: branch } })
+  const statusChangedToPause = existing.status !== "paused" && branch.status === "paused"
+  const statusChangedFromPause = existing.status === "paused" && branch.status !== "paused"
+  const tasks =
+    statusChangedToPause || statusChangedFromPause
+      ? applyBranchPauseToTasks(data, id, statusChangedToPause)
+      : data.tasks
+
+  return writeData({ ...data, branches: { ...data.branches, [id]: branch }, tasks })
+}
+
+export async function setBranchPaused(id: string, paused: boolean) {
+  const data = await readData()
+  const existing = data.branches[id]
+  if (!existing) throw new Error("Ветка не найдена")
+  const now = new Date().toISOString()
+  const branch: Branch = {
+    ...existing,
+    status: paused ? "paused" : null,
+    updatedAt: now,
+  }
+  const tasks = applyBranchPauseToTasks(data, id, paused)
+
+  return writeData({ ...data, branches: { ...data.branches, [id]: branch }, tasks })
 }
 
 export async function deleteBranch(id: string) {

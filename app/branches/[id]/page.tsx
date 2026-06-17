@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { Pencil, Plus } from "lucide-react"
+import { Pause, Pencil, Play, Plus } from "lucide-react"
 import { AppShell } from "@/components/app-shell"
 import { BranchCounts } from "@/components/branch-counts"
 import { BranchForm } from "@/components/branch-form"
@@ -14,7 +14,7 @@ import { TaskForm } from "@/components/task-form"
 import { TaskList } from "@/components/task-list"
 import { Card, LinkButton } from "@/components/ui"
 import { requireAdmin } from "@/lib/auth"
-import { deleteBranchAction } from "@/lib/data/actions"
+import { deleteBranchAction, pauseBranchAction, resumeBranchAction } from "@/lib/data/actions"
 import { getBranchTaskCounts } from "@/lib/data/counts"
 import { getDataForPage, getFilteredTasks } from "@/lib/data/queries"
 import { getBranchPath, getChildren } from "@/lib/data/tree"
@@ -114,6 +114,16 @@ export default async function BranchPage({
             >
               <BranchForm data={data} branch={branch} />
             </DialogButton>
+            <form action={branch.status === "paused" ? resumeBranchAction : pauseBranchAction}>
+              <input type="hidden" name="id" value={id} />
+              <button
+                type="submit"
+                className="inline-flex h-9 items-center justify-center gap-2 rounded-md border bg-white px-3 text-sm font-medium transition hover:bg-muted"
+              >
+                {branch.status === "paused" ? <Play className="size-4" /> : <Pause className="size-4" />}
+                {branch.status === "paused" ? "Снять паузу" : "Пауза"}
+              </button>
+            </form>
             <ConfirmDialog
               id={id}
               action={deleteBranchAction}
