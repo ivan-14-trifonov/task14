@@ -6,6 +6,7 @@ import { BranchCounts } from "@/components/branch-counts"
 import { BranchForm } from "@/components/branch-form"
 import { BranchSortableList } from "@/components/branch-sortable-list"
 import { BranchTimingBadge } from "@/components/branch-timing-badge"
+import { BranchTitle } from "@/components/branch-title"
 import { BranchStatusDot } from "@/components/status-badge"
 import { BranchTag } from "@/components/branch-tag"
 import { Card } from "@/components/ui"
@@ -22,7 +23,9 @@ export function BranchCard({ branch, data }: { branch: Branch; data: AppData }) 
         <Link href={`/branches/${branch.id}`} className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <Folder className="size-4 text-blue-600" />
-            <h2 className="truncate font-semibold">{branch.title}</h2>
+            <h2 className="truncate font-semibold">
+              <BranchTitle branch={branch} />
+            </h2>
             <BranchTag tag={branch.tag} />
             <BranchTimingBadge branch={branch} />
             <BranchStatusDot status={branch.status} />
@@ -67,7 +70,7 @@ function BranchTreeNode({ branch, data }: { branch: Branch; data: AppData }) {
     <div className="grid gap-2">
       <Link href={`/branches/${branch.id}`} className="rounded-md px-2 py-2 hover:bg-muted">
         <div className="flex items-center gap-2 text-sm font-medium">
-          <span>{branch.title}</span>
+          <BranchTitle branch={branch} />
           <BranchTag tag={branch.tag} />
           <BranchTimingBadge branch={branch} compact />
           <BranchStatusDot status={branch.status} />

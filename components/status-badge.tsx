@@ -25,9 +25,6 @@ export function StatusBadge({ status }: { status: TaskStatus }) {
 }
 
 export function BranchStatusDot({ status }: { status: BranchStatus }) {
-  if (status === "paused") {
-    return <span className="rounded-md bg-yellow-50 px-2 py-0.5 text-xs font-medium text-yellow-700 ring-1 ring-yellow-200">Пауза</span>
-  }
   if (status !== "in_progress") return null
   return <span className="inline-block size-2 rounded-full bg-red-500" title="В работе" />
 }

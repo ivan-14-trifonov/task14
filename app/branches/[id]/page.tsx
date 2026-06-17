@@ -7,6 +7,7 @@ import { BranchForm } from "@/components/branch-form"
 import { BranchTag } from "@/components/branch-tag"
 import { BranchTimingBadge } from "@/components/branch-timing-badge"
 import { BranchTimingForm } from "@/components/branch-timing-form"
+import { BranchTitle } from "@/components/branch-title"
 import { ConfirmDialog } from "@/components/confirm-dialog"
 import { DialogButton } from "@/components/dialog-button"
 import { BranchStatusDot } from "@/components/status-badge"
@@ -63,13 +64,15 @@ export default async function BranchPage({
                     href={`/branches/${item.id}`}
                     className="flex items-center gap-1 rounded-sm hover:text-foreground hover:underline"
                   >
-                    {item.title}
+                    <BranchTitle branch={item} />
                   </Link>
                 </span>
               ))}
             </div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-semibold">{branch.title}</h1>
+              <h1 className="text-2xl font-semibold">
+                <BranchTitle branch={branch} />
+              </h1>
               <BranchTag tag={branch.tag} />
               <BranchTimingBadge branch={branch} />
               <BranchStatusDot status={branch.status} />
@@ -151,7 +154,7 @@ export default async function BranchPage({
                       <div>
                         <div className="flex items-center gap-2 font-medium">
                           <BranchStatusDot status={child.status} />
-                          {child.title}
+                          <BranchTitle branch={child} />
                           <BranchTag tag={child.tag} />
                           <BranchTimingBadge branch={child} compact />
                         </div>
