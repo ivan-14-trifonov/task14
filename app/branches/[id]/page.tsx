@@ -17,8 +17,53 @@ import { Card, LinkButton } from "@/components/ui"
 import { requireAdmin } from "@/lib/auth"
 import { deleteBranchAction, pauseBranchAction, resumeBranchAction } from "@/lib/data/actions"
 import { getBranchTaskCounts } from "@/lib/data/counts"
+import { getTaskDailyState } from "@/lib/data/daily"
 import { getDataForPage, getFilteredTasks } from "@/lib/data/queries"
 import { getBranchPath, getChildren } from "@/lib/data/tree"
+import type { AppData, Task } from "@/types"
+
+function TaskGroup({
+  data,
+  title,
+  currentTasks,
+  nestedTasks,
+}: {
+  data: AppData
+  title: string
+  currentTasks: Task[]
+  nestedTasks: Task[]
+}) {
+  return (
+    <div className="grid gap-4">
+      <h2 className="text-lg font-semibold">{title}</h2>
+      <div className="grid gap-3">
+        <h3 className="text-sm font-semibold text-muted-foreground">Задачи этой ветки</h3>
+        <TaskList data={data} tasks={currentTasks} />
+      </div>
+      <div className="grid gap-3">
+        <h3 className="text-sm font-semibold text-muted-foreground">Задачи вложенных веток</h3>
+        <TaskList data={data} tasks={nestedTasks} />
+      </div>
+    </div>
+  )
+}
+
+function ArchiveGroup({
+  data,
+  title,
+  tasks,
+}: {
+  data: AppData
+  title: string
+  tasks: Task[]
+}) {
+  return (
+    <div className="grid gap-3">
+      <h2 className="text-lg font-semibold">{title}</h2>
+      <TaskList data={data} tasks={tasks} archive />
+    </div>
+  )
+}
 
 export default async function BranchPage({
   params,
@@ -46,6 +91,11 @@ export default async function BranchPage({
   const nestedArchivedTasks = getFilteredTasks(data, { status: "done", branchId: id, includeDescendants: true }).filter(
     (task) => task.branchId !== id,
   )
+  const isDoNowTask = (task: Task) => task.status === "in_progress" && getTaskDailyState(task) !== "closed"
+  const currentDoNowTasks = tasks.filter(isDoNowTask)
+  const nestedDoNowTasks = nestedTasks.filter(isDoNowTask)
+  const currentOtherTasks = tasks.filter((task) => !isDoNowTask(task))
+  const nestedOtherTasks = nestedTasks.filter((task) => !isDoNowTask(task))
   const path = getBranchPath(id, data)
 
   return (
@@ -175,29 +225,23 @@ export default async function BranchPage({
           )}
         </div>
 
-        <div className="grid gap-3">
-          <h2 className="text-lg font-semibold">Задачи этой ветки</h2>
-          <TaskList data={data} tasks={tasks} />
-        </div>
+        <TaskGroup
+          data={data}
+          title="Делать сейчас"
+          currentTasks={currentDoNowTasks}
+          nestedTasks={nestedDoNowTasks}
+        />
 
-        {nestedTasks.length ? (
-          <div className="grid gap-3">
-            <h2 className="text-lg font-semibold">Задачи вложенных веток</h2>
-            <TaskList data={data} tasks={nestedTasks} />
-          </div>
-        ) : null}
+        <TaskGroup
+          data={data}
+          title="Остальные задачи"
+          currentTasks={currentOtherTasks}
+          nestedTasks={nestedOtherTasks}
+        />
 
-        <div className="grid gap-3">
-          <h2 className="text-lg font-semibold">Архив этой ветки</h2>
-          <TaskList data={data} tasks={archivedTasks} archive />
-        </div>
+        <ArchiveGroup data={data} title="Архив этой ветки" tasks={archivedTasks} />
 
-        {nestedArchivedTasks.length ? (
-          <div className="grid gap-3">
-            <h2 className="text-lg font-semibold">Архив вложенных веток</h2>
-            <TaskList data={data} tasks={nestedArchivedTasks} archive />
-          </div>
-        ) : null}
+        <ArchiveGroup data={data} title="Архив вложенных веток" tasks={nestedArchivedTasks} />
       </section>
     </AppShell>
   )
