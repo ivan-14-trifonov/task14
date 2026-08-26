@@ -375,9 +375,11 @@ function BranchBubble({
         ) : null}
         {recurringCount ? (
           <span
-            className="inline-flex size-4 rounded-full border border-blue-600 bg-transparent"
+            className="inline-flex size-4 items-center justify-center rounded-full border border-blue-600 bg-transparent text-[10px] font-bold leading-4 text-blue-700"
             title="Повторяющиеся задачи"
-          />
+          >
+            {recurringCount}
+          </span>
         ) : null}
         {pausedCount ? (
           <span className="inline-flex min-w-4 items-center justify-center rounded-full bg-yellow-500 px-1 text-[10px] font-bold leading-4 text-white">
