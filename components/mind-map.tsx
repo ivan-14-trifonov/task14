@@ -1,4 +1,7 @@
+"use client"
+
 import Link from "next/link"
+import { useState } from "react"
 import { getChildren } from "@/lib/data/tree"
 import { BranchTimingBadge } from "@/components/branch-timing-badge"
 import { BranchTitle } from "@/components/branch-title"
@@ -28,7 +31,7 @@ type BranchLayout = {
 type MapNode = {
   id: string
   branch: Branch
-  inProgressTasks: Task[]
+  tasks: Task[]
   parentId: string | null
   depth: number
   side: Side
@@ -42,9 +45,15 @@ type MapEdge = {
   toId: string
 }
 
-function getBranchInProgressTasks(branchId: string, data: AppData) {
+type TooltipState = {
+  tasks: Task[]
+  x: number
+  y: number
+} | null
+
+function getBranchMapTasks(branchId: string, data: AppData) {
   return Object.values(data.tasks)
-    .filter((task) => task.branchId === branchId && task.status === "in_progress")
+    .filter((task) => task.branchId === branchId && (task.status === "in_progress" || task.status === "paused"))
     .sort((a, b) => a.sort - b.sort || a.title.localeCompare(b.title, "ru"))
 }
 
@@ -98,7 +107,7 @@ function placeBranchLayout({
   nodes.push({
     id: layout.branch.id,
     branch: layout.branch,
-    inProgressTasks: getBranchInProgressTasks(layout.branch.id, data),
+    tasks: getBranchMapTasks(layout.branch.id, data),
     parentId,
     depth,
     side,
@@ -196,6 +205,8 @@ function buildMindMapLayout(data: AppData) {
 }
 
 export function MindMap({ data }: { data: AppData }) {
+  const [showPausedTasks, setShowPausedTasks] = useState(false)
+  const [tooltip, setTooltip] = useState<TooltipState>(null)
   const roots = getChildren(data, null)
 
   if (!roots.length) {
@@ -206,71 +217,125 @@ export function MindMap({ data }: { data: AppData }) {
   const nodesById = new Map(layout.nodes.map((node) => [node.id, node]))
 
   return (
-    <div className="overflow-auto rounded-lg border bg-white p-2">
-      <div className="relative" style={{ width: layout.width, height: layout.height }}>
-        <svg className="absolute inset-0" width={layout.width} height={layout.height} aria-hidden="true">
-          {layout.edges.map((edge) => {
-            const child = nodesById.get(edge.toId)
-            const parent = edge.fromId ? nodesById.get(edge.fromId) : layout.center
-            if (!child || !parent) return null
-            const direction = child.side === "right" ? 1 : -1
-            const parentEdgeX = parent.x + direction * (edge.fromId ? NODE_WIDTH / 2 : CENTER_SIZE / 2)
-            const childEdgeX = child.x - direction * (NODE_WIDTH / 2)
-            const middleX = parentEdgeX + (childEdgeX - parentEdgeX) / 2
-            const path = `M ${parentEdgeX} ${parent.y} H ${middleX} V ${child.y} H ${childEdgeX}`
+    <>
+      <label className="mb-2 inline-flex items-center gap-2 text-xs font-medium text-muted-foreground">
+        <input
+          type="checkbox"
+          checked={showPausedTasks}
+          onChange={(event) => setShowPausedTasks(event.target.checked)}
+          className="size-4 rounded border"
+        />
+        Показывать задачи на паузе
+      </label>
 
-            return (
-              <path
-                key={`${edge.fromId ?? "root"}-${edge.toId}`}
-                d={path}
-                fill="none"
-                className="stroke-slate-200"
-                strokeWidth="2"
-              />
-            )
-          })}
-        </svg>
+      <div className="overflow-auto rounded-lg border bg-white p-2">
+        <div className="relative" style={{ width: layout.width, height: layout.height }}>
+          <svg className="absolute inset-0" width={layout.width} height={layout.height} aria-hidden="true">
+            {layout.edges.map((edge) => {
+              const child = nodesById.get(edge.toId)
+              const parent = edge.fromId ? nodesById.get(edge.fromId) : layout.center
+              if (!child || !parent) return null
+              const direction = child.side === "right" ? 1 : -1
+              const parentEdgeX = parent.x + direction * (edge.fromId ? NODE_WIDTH / 2 : CENTER_SIZE / 2)
+              const childEdgeX = child.x - direction * (NODE_WIDTH / 2)
+              const middleX = parentEdgeX + (childEdgeX - parentEdgeX) / 2
+              const path = `M ${parentEdgeX} ${parent.y} H ${middleX} V ${child.y} H ${childEdgeX}`
 
-        <div
-          className="absolute flex size-[88px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-2 text-center text-xs font-semibold text-blue-950 shadow-sm"
-          style={{ left: layout.center.x, top: layout.center.y }}
-        >
-          Дерево задач
+              return (
+                <path
+                  key={`${edge.fromId ?? "root"}-${edge.toId}`}
+                  d={path}
+                  fill="none"
+                  className="stroke-slate-200"
+                  strokeWidth="2"
+                />
+              )
+            })}
+          </svg>
+
+          <div
+            className="absolute flex size-[88px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-2 text-center text-xs font-semibold text-blue-950 shadow-sm"
+            style={{ left: layout.center.x, top: layout.center.y }}
+          >
+            Дерево задач
+          </div>
+
+          {layout.nodes.map((node) => (
+            <BranchBubble
+              key={node.id}
+              branch={node.branch}
+              tasks={node.tasks}
+              showPausedTasks={showPausedTasks}
+              depth={node.depth}
+              height={node.height}
+              x={node.x}
+              y={node.y}
+              onTooltipChange={setTooltip}
+            />
+          ))}
         </div>
-
-        {layout.nodes.map((node) => (
-          <BranchBubble
-            key={node.id}
-            branch={node.branch}
-            inProgressTasks={node.inProgressTasks}
-            depth={node.depth}
-            height={node.height}
-            x={node.x}
-            y={node.y}
-          />
-        ))}
       </div>
-    </div>
+
+      {tooltip ? (
+        <div
+          className="pointer-events-none fixed z-[9999] w-64 -translate-x-1/2 rounded-md border bg-white px-4 py-3 text-left text-xs shadow-2xl"
+          style={{ left: tooltip.x, top: tooltip.y }}
+        >
+          <ul className="list-disc space-y-1 pl-4 text-muted-foreground marker:text-red-500">
+            {tooltip.tasks.map((task) => (
+              <li key={task.id} className="break-words">
+                {task.title}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </>
   )
 }
 
 function BranchBubble({
   branch,
-  inProgressTasks,
+  tasks,
+  showPausedTasks,
   depth,
   height,
   x,
   y,
+  onTooltipChange,
 }: {
   branch: Branch
-  inProgressTasks: Task[]
+  tasks: Task[]
+  showPausedTasks: boolean
   depth: number
   height: number
   x: number
   y: number
+  onTooltipChange: (tooltip: TooltipState) => void
 }) {
+  const visibleTasks = tasks.filter((task) => task.status === "in_progress" || (showPausedTasks && task.status === "paused"))
+  const inProgressCount = tasks.filter((task) => task.status === "in_progress").length
+  const pausedCount = showPausedTasks ? tasks.filter((task) => task.status === "paused").length : 0
+
+  function showTooltip(element: HTMLDivElement) {
+    if (!visibleTasks.length) return
+    const rect = element.getBoundingClientRect()
+    onTooltipChange({
+      tasks: visibleTasks,
+      x: rect.left + rect.width / 2,
+      y: rect.bottom + 8,
+    })
+  }
+
   return (
-    <div className="group absolute -translate-x-1/2 -translate-y-1/2" style={{ left: x, top: y, width: NODE_WIDTH }}>
+    <div
+      className="group absolute z-10 -translate-x-1/2 -translate-y-1/2 hover:z-[9998]"
+      style={{ left: x, top: y, width: NODE_WIDTH }}
+      onMouseEnter={(event) => showTooltip(event.currentTarget)}
+      onMouseLeave={() => onTooltipChange(null)}
+      onFocus={(event) => showTooltip(event.currentTarget)}
+      onBlur={() => onTooltipChange(null)}
+    >
       <Link
         href={`/branches/${branch.id}`}
         style={{ minHeight: height }}
@@ -283,24 +348,17 @@ function BranchBubble({
         <BranchTitle branch={branch} className="min-w-0 break-words" />
         <BranchTimingBadge branch={branch} compact />
         <BranchStatusDot status={branch.status} />
-        {inProgressTasks.length ? (
+        {inProgressCount ? (
           <span className="inline-flex min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold leading-4 text-white">
-            {inProgressTasks.length}
+            {inProgressCount}
+          </span>
+        ) : null}
+        {pausedCount ? (
+          <span className="inline-flex min-w-4 items-center justify-center rounded-full bg-yellow-500 px-1 text-[10px] font-bold leading-4 text-white">
+            {pausedCount}
           </span>
         ) : null}
       </Link>
-      {inProgressTasks.length ? (
-        <div className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 hidden w-64 -translate-x-1/2 rounded-md border bg-white p-3 text-left text-xs shadow-lg group-hover:block">
-          <p className="mb-2 font-semibold text-foreground">Задачи в работе</p>
-          <ul className="grid gap-1 text-muted-foreground">
-            {inProgressTasks.map((task) => (
-              <li key={task.id} className="break-words">
-                {task.title}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
     </div>
   )
 }
