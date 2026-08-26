@@ -15,7 +15,10 @@ export default async function TasksPage({
   const session = await requireAdmin()
   const params = await searchParams
   const data = await getDataForPage()
-  const status = params.status === "in_progress" || params.status === "planned" ? params.status : "all"
+  const status =
+    params.status === "in_progress" || params.status === "planned" || params.status === "recurring"
+      ? params.status
+      : "all"
   const tasks = getFilteredTasks(data, {
     query: params.q,
     status,

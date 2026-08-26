@@ -57,7 +57,11 @@ function getVisibleChildren(data: AppData, parentId: string | null, showAll: boo
 
 function getBranchMapTasks(branchId: string, data: AppData, showAll: boolean) {
   return Object.values(data.tasks)
-    .filter((task) => task.branchId === branchId && (task.status === "in_progress" || (showAll && task.status === "paused")))
+    .filter(
+      (task) =>
+        task.branchId === branchId &&
+        (task.status === "in_progress" || task.status === "recurring" || (showAll && task.status === "paused")),
+    )
     .sort((a, b) => a.sort - b.sort || a.title.localeCompare(b.title, "ru"))
 }
 
@@ -326,8 +330,11 @@ function BranchBubble({
   y: number
   onTooltipChange: (tooltip: TooltipState) => void
 }) {
-  const visibleTasks = tasks.filter((task) => task.status === "in_progress" || (showAll && task.status === "paused"))
+  const visibleTasks = tasks.filter(
+    (task) => task.status === "in_progress" || task.status === "recurring" || (showAll && task.status === "paused"),
+  )
   const inProgressCount = tasks.filter((task) => task.status === "in_progress").length
+  const recurringCount = tasks.filter((task) => task.status === "recurring").length
   const pausedCount = showAll ? tasks.filter((task) => task.status === "paused").length : 0
 
   function showTooltip(element: HTMLDivElement) {
@@ -364,6 +371,14 @@ function BranchBubble({
         {inProgressCount ? (
           <span className="inline-flex min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold leading-4 text-white">
             {inProgressCount}
+          </span>
+        ) : null}
+        {recurringCount ? (
+          <span
+            className="inline-flex size-4 items-center justify-center rounded-full border border-blue-600 bg-transparent text-[10px] font-bold leading-4 text-blue-700"
+            title="Повторяющиеся задачи"
+          >
+            {recurringCount > 1 ? recurringCount : null}
           </span>
         ) : null}
         {pausedCount ? (

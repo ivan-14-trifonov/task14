@@ -1,5 +1,5 @@
 export type BranchStatus = "in_progress" | "timing" | "paused" | null
-export type TaskStatus = "in_progress" | "planned" | "paused" | "done"
+export type TaskStatus = "in_progress" | "planned" | "recurring" | "paused" | "done"
 export type TaskDailyStatus = "worked" | "closed"
 
 export type Branch = {

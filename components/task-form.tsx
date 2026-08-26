@@ -45,6 +45,7 @@ export function TaskForm({
           {task?.status === "paused" ? <option value="paused">На паузе</option> : null}
           <option value="in_progress">В работе</option>
           <option value="planned">В плане</option>
+          <option value="recurring">Повторяющаяся задача</option>
           <option value="done">Выполнено</option>
         </Select>
       </Label>
