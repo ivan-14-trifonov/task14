@@ -1,4 +1,4 @@
-import { FolderTree, ListTodo } from "lucide-react"
+import { Download, FolderTree, ListTodo } from "lucide-react"
 import { SignOutButton } from "@/components/auth-buttons"
 import { LinkButton } from "@/components/ui"
 import type { Session } from "next-auth"
@@ -20,6 +20,10 @@ export function AppShell({ children, session }: { children: React.ReactNode; ses
             <LinkButton href="/tasks" variant="ghost">
               <ListTodo className="size-4" />
               Все задачи
+            </LinkButton>
+            <LinkButton href="/api/data/download" variant="ghost">
+              <Download className="size-4" />
+              Скачать данные
             </LinkButton>
             <SignOutButton />
           </nav>
