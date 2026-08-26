@@ -165,8 +165,9 @@ function placeRootLayouts({
   let cursor = -rootsHeight / 2
   const direction = side === "right" ? 1 : -1
   const x = direction * (CENTER_SIZE / 2 + HORIZONTAL_GAP + NODE_WIDTH / 2)
+  const orderedLayouts = side === "left" ? [...layouts].reverse() : layouts
 
-  for (const layout of layouts) {
+  for (const layout of orderedLayouts) {
     const y = cursor + layout.height / 2
     placeBranchLayout({ layout, data, depth: 0, edges, nodes, parentId: null, showAll, side, x, y })
     cursor += layout.height + ROOT_GAP
