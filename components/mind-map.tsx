@@ -298,10 +298,21 @@ export function MindMap({ data }: { data: AppData }) {
           className="pointer-events-none fixed z-[9999] w-64 -translate-x-1/2 rounded-md border bg-white px-4 py-3 text-left text-xs shadow-2xl"
           style={{ left: tooltip.x, top: tooltip.y }}
         >
-          <ul className="list-disc space-y-1 pl-4 text-muted-foreground marker:text-red-500">
+          <ul className="space-y-1 text-muted-foreground">
             {tooltip.tasks.map((task) => (
-              <li key={task.id} className="break-words">
-                {task.title}
+              <li key={task.id} className="flex gap-2">
+                <span
+                  className={cn(
+                    "mt-1.5 size-1.5 shrink-0 rounded-full",
+                    task.status === "in_progress" && "bg-red-500",
+                    task.status === "recurring" && "border border-blue-600 bg-transparent",
+                    task.status === "paused" && "bg-yellow-500",
+                  )}
+                  aria-hidden="true"
+                />
+                <span className="min-w-0 break-words">
+                  {task.title}
+                </span>
               </li>
             ))}
           </ul>
@@ -375,7 +386,7 @@ function BranchBubble({
         ) : null}
         {recurringCount ? (
           <span
-            className="inline-flex min-w-4 items-center justify-center rounded-full border border-blue-600 bg-transparent px-1 text-[10px] font-bold leading-4 text-blue-700"
+            className="inline-flex box-border min-w-4 items-center justify-center rounded-full border border-blue-600 bg-transparent px-[3px] text-[10px] font-bold leading-[14px] text-blue-700"
             title="Повторяющиеся задачи"
           >
             {recurringCount}
