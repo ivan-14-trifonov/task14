@@ -91,7 +91,8 @@ export default async function BranchPage({
   const nestedArchivedTasks = getFilteredTasks(data, { status: "done", branchId: id, includeDescendants: true }).filter(
     (task) => task.branchId !== id,
   )
-  const isDoNowTask = (task: Task) => task.status === "in_progress" && getTaskDailyState(task) !== "closed"
+  const isDoNowTask = (task: Task) =>
+    task.status === "recurring" || (task.status === "in_progress" && getTaskDailyState(task) !== "closed")
   const currentDoNowTasks = tasks.filter(isDoNowTask)
   const nestedDoNowTasks = nestedTasks.filter(isDoNowTask)
   const currentOtherTasks = tasks.filter((task) => !isDoNowTask(task))
