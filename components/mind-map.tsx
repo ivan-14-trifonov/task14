@@ -8,10 +8,113 @@ import { Card } from "@/components/ui"
 import { cn } from "@/lib/utils"
 import type { AppData, Branch, Task } from "@/types"
 
+const CENTER_RADIUS = 260
+const LEVEL_GAP = 190
+const NODE_WIDTH = 220
+const NODE_HEIGHT = 44
+const MAP_PADDING = 80
+
+type MapNode = {
+  id: string
+  branch: Branch
+  inProgressTasks: Task[]
+  depth: number
+  x: number
+  y: number
+}
+
+type MapEdge = {
+  fromX: number
+  fromY: number
+  toX: number
+  toY: number
+}
+
 function getBranchInProgressTasks(branchId: string, data: AppData) {
   return Object.values(data.tasks)
     .filter((task) => task.branchId === branchId && task.status === "in_progress")
     .sort((a, b) => a.sort - b.sort || a.title.localeCompare(b.title, "ru"))
+}
+
+function getBranchLeafCount(branch: Branch, data: AppData): number {
+  const children = getChildren(data, branch.id)
+  if (!children.length) return 1
+  return children.reduce((total, child) => total + getBranchLeafCount(child, data), 0)
+}
+
+function polarPoint(angle: number, radius: number) {
+  const radians = (angle * Math.PI) / 180
+  return {
+    x: Math.cos(radians) * radius,
+    y: Math.sin(radians) * radius,
+  }
+}
+
+function buildMindMapLayout(data: AppData) {
+  const roots = getChildren(data, null)
+  const nodes: MapNode[] = []
+  const edges: MapEdge[] = []
+
+  function placeBranch(branch: Branch, angle: number, radius: number, spread: number, parent: { x: number; y: number }) {
+    const point = polarPoint(angle, radius)
+    nodes.push({
+      id: branch.id,
+      branch,
+      inProgressTasks: getBranchInProgressTasks(branch.id, data),
+      depth: Math.round((radius - CENTER_RADIUS) / LEVEL_GAP),
+      x: point.x,
+      y: point.y,
+    })
+    edges.push({ fromX: parent.x, fromY: parent.y, toX: point.x, toY: point.y })
+
+    const children = getChildren(data, branch.id)
+    if (!children.length) return
+
+    const totalLeaves = children.reduce((total, child) => total + getBranchLeafCount(child, data), 0)
+    let cursor = angle - spread / 2
+
+    for (const child of children) {
+      const childLeaves = getBranchLeafCount(child, data)
+      const childSpread = (childLeaves / totalLeaves) * spread
+      const childAngle = cursor + childSpread / 2
+      placeBranch(child, childAngle, radius + LEVEL_GAP, Math.max(18, childSpread * 0.9), point)
+      cursor += childSpread
+    }
+  }
+
+  const rootStep = 360 / roots.length
+  roots.forEach((branch, index) => {
+    const angle = -90 + index * rootStep
+    placeBranch(branch, angle, CENTER_RADIUS, Math.min(120, rootStep * 0.82), { x: 0, y: 0 })
+  })
+
+  const bounds = [...nodes.map((node) => ({ x: node.x, y: node.y })), { x: 0, y: 0 }].reduce(
+    (result, point) => ({
+      minX: Math.min(result.minX, point.x - NODE_WIDTH / 2),
+      maxX: Math.max(result.maxX, point.x + NODE_WIDTH / 2),
+      minY: Math.min(result.minY, point.y - NODE_HEIGHT / 2),
+      maxY: Math.max(result.maxY, point.y + NODE_HEIGHT / 2),
+    }),
+    { minX: 0, maxX: 0, minY: 0, maxY: 0 },
+  )
+
+  const offsetX = MAP_PADDING - bounds.minX
+  const offsetY = MAP_PADDING - bounds.minY
+  const width = bounds.maxX - bounds.minX + MAP_PADDING * 2
+  const height = bounds.maxY - bounds.minY + MAP_PADDING * 2
+
+  return {
+    center: { x: offsetX, y: offsetY },
+    edges: edges.map((edge) => ({
+      fromX: edge.fromX + offsetX,
+      fromY: edge.fromY + offsetY,
+      toX: edge.toX + offsetX,
+      toY: edge.toY + offsetY,
+    })),
+    nodes: nodes.map((node) => ({ ...node, x: node.x + offsetX, y: node.y + offsetY })),
+    width,
+    height,
+  }
 }
 
 export function MindMap({ data }: { data: AppData }) {
@@ -21,38 +124,43 @@ export function MindMap({ data }: { data: AppData }) {
     return <Card className="p-6 text-sm text-muted-foreground">Дерево пустое. Создайте первое направление.</Card>
   }
 
+  const layout = buildMindMapLayout(data)
+
   return (
-    <div className="overflow-x-auto rounded-lg border bg-white p-4">
-      <div className="flex min-w-max items-start gap-8 py-2">
-        {roots.map((branch) => (
-          <MindMapNode key={branch.id} branch={branch} data={data} depth={0} />
+    <div className="overflow-auto rounded-lg border bg-white p-4">
+      <div className="relative" style={{ width: layout.width, height: layout.height }}>
+        <svg className="absolute inset-0" width={layout.width} height={layout.height} aria-hidden="true">
+          {layout.edges.map((edge, index) => (
+            <line
+              key={`${edge.fromX}-${edge.fromY}-${edge.toX}-${edge.toY}-${index}`}
+              x1={edge.fromX}
+              y1={edge.fromY}
+              x2={edge.toX}
+              y2={edge.toY}
+              className="stroke-slate-200"
+              strokeWidth="2"
+            />
+          ))}
+        </svg>
+
+        <div
+          className="absolute flex size-32 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-blue-200 bg-blue-50 text-center text-sm font-semibold text-blue-950 shadow-sm"
+          style={{ left: layout.center.x, top: layout.center.y }}
+        >
+          Дерево задач
+        </div>
+
+        {layout.nodes.map((node) => (
+          <BranchBubble
+            key={node.id}
+            branch={node.branch}
+            inProgressTasks={node.inProgressTasks}
+            depth={node.depth}
+            x={node.x}
+            y={node.y}
+          />
         ))}
       </div>
-    </div>
-  )
-}
-
-function MindMapNode({ branch, data, depth }: { branch: Branch; data: AppData; depth: number }) {
-  const children = getChildren(data, branch.id)
-  const inProgressTasks = getBranchInProgressTasks(branch.id, data)
-
-  return (
-    <div className="flex flex-col items-center">
-      <BranchBubble branch={branch} inProgressTasks={inProgressTasks} depth={depth} />
-      {children.length ? (
-        <div className="mt-3 flex flex-col items-center">
-          <div className="h-5 border-l" />
-          <div className="relative flex items-start gap-6 pt-5">
-            <div className="absolute left-0 right-0 top-0 border-t" />
-            {children.map((child) => (
-              <div key={child.id} className="relative flex flex-col items-center">
-                <div className="absolute -top-5 h-5 border-l" />
-                <MindMapNode branch={child} data={data} depth={depth + 1} />
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : null}
     </div>
   )
 }
@@ -61,17 +169,21 @@ function BranchBubble({
   branch,
   inProgressTasks,
   depth,
+  x,
+  y,
 }: {
   branch: Branch
   inProgressTasks: Task[]
   depth: number
+  x: number
+  y: number
 }) {
   return (
-    <div className="group relative">
+    <div className="group absolute -translate-x-1/2 -translate-y-1/2" style={{ left: x, top: y, width: NODE_WIDTH }}>
       <Link
         href={`/branches/${branch.id}`}
         className={cn(
-          "flex max-w-64 items-center gap-2 rounded-full border bg-white px-4 py-2 text-sm font-semibold shadow-sm transition hover:border-blue-200 hover:bg-blue-50",
+          "flex min-h-11 items-center justify-center gap-2 rounded-full border bg-white px-4 py-2 text-center text-sm font-semibold shadow-sm transition hover:border-blue-200 hover:bg-blue-50",
           depth === 0 && "border-blue-200 bg-blue-50 text-blue-950",
           branch.status === "paused" && "text-muted-foreground line-through",
         )}
