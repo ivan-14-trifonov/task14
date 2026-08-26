@@ -1,6 +1,5 @@
 import Link from "next/link"
 import { getChildren } from "@/lib/data/tree"
-import { BranchTag } from "@/components/branch-tag"
 import { BranchTimingBadge } from "@/components/branch-timing-badge"
 import { BranchTitle } from "@/components/branch-title"
 import { BranchStatusDot } from "@/components/status-badge"
@@ -8,13 +7,13 @@ import { Card } from "@/components/ui"
 import { cn } from "@/lib/utils"
 import type { AppData, Branch, Task } from "@/types"
 
-const NODE_WIDTH = 220
-const NODE_MIN_HEIGHT = 56
-const HORIZONTAL_GAP = 96
-const VERTICAL_GAP = 28
-const ROOT_GAP = 48
-const CENTER_SIZE = 128
-const MAP_PADDING = 80
+const NODE_WIDTH = 160
+const NODE_MIN_HEIGHT = 34
+const HORIZONTAL_GAP = 36
+const VERTICAL_GAP = 10
+const ROOT_GAP = 16
+const CENTER_SIZE = 88
+const MAP_PADDING = 24
 
 type Side = "left" | "right"
 
@@ -50,9 +49,9 @@ function getBranchInProgressTasks(branchId: string, data: AppData) {
 }
 
 function estimateNodeHeight(branch: Branch) {
-  const visibleLength = branch.title.length + branch.tag.length + (branch.timing ? 18 : 0)
-  const lines = Math.max(1, Math.ceil(visibleLength / 14))
-  return Math.max(NODE_MIN_HEIGHT, lines * 24 + 28)
+  const visibleLength = branch.title.length + (branch.timing ? 12 : 0)
+  const lines = Math.max(1, Math.ceil(visibleLength / 18))
+  return Math.max(NODE_MIN_HEIGHT, lines * 18 + 12)
 }
 
 function getStackHeight(items: BranchLayout[], gap: number) {
@@ -207,7 +206,7 @@ export function MindMap({ data }: { data: AppData }) {
   const nodesById = new Map(layout.nodes.map((node) => [node.id, node]))
 
   return (
-    <div className="overflow-auto rounded-lg border bg-white p-4">
+    <div className="overflow-auto rounded-lg border bg-white p-2">
       <div className="relative" style={{ width: layout.width, height: layout.height }}>
         <svg className="absolute inset-0" width={layout.width} height={layout.height} aria-hidden="true">
           {layout.edges.map((edge) => {
@@ -233,7 +232,7 @@ export function MindMap({ data }: { data: AppData }) {
         </svg>
 
         <div
-          className="absolute flex size-32 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-blue-200 bg-blue-50 text-center text-sm font-semibold text-blue-950 shadow-sm"
+          className="absolute flex size-[88px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-2 text-center text-xs font-semibold text-blue-950 shadow-sm"
           style={{ left: layout.center.x, top: layout.center.y }}
         >
           Дерево задач
@@ -276,17 +275,16 @@ function BranchBubble({
         href={`/branches/${branch.id}`}
         style={{ minHeight: height }}
         className={cn(
-          "flex min-h-11 items-center justify-center gap-2 rounded-full border bg-white px-4 py-2 text-center text-sm font-semibold shadow-sm transition hover:border-blue-200 hover:bg-blue-50",
+          "flex min-h-8 items-center justify-center gap-1 rounded-full border bg-white px-2 py-1 text-center text-xs font-semibold shadow-sm transition hover:border-blue-200 hover:bg-blue-50",
           depth === 0 && "border-blue-200 bg-blue-50 text-blue-950",
           branch.status === "paused" && "text-muted-foreground line-through",
         )}
       >
         <BranchTitle branch={branch} className="min-w-0 break-words" />
-        <BranchTag tag={branch.tag} />
         <BranchTimingBadge branch={branch} compact />
         <BranchStatusDot status={branch.status} />
         {inProgressTasks.length ? (
-          <span className="ml-0.5 inline-flex min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-xs font-bold leading-5 text-white">
+          <span className="inline-flex min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold leading-4 text-white">
             {inProgressTasks.length}
           </span>
         ) : null}
