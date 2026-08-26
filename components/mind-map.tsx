@@ -51,9 +51,13 @@ type TooltipState = {
   y: number
 } | null
 
-function getBranchMapTasks(branchId: string, data: AppData) {
+function getVisibleChildren(data: AppData, parentId: string | null, showAll: boolean) {
+  return getChildren(data, parentId).filter((branch) => showAll || branch.status !== "paused")
+}
+
+function getBranchMapTasks(branchId: string, data: AppData, showAll: boolean) {
   return Object.values(data.tasks)
-    .filter((task) => task.branchId === branchId && (task.status === "in_progress" || task.status === "paused"))
+    .filter((task) => task.branchId === branchId && (task.status === "in_progress" || (showAll && task.status === "paused")))
     .sort((a, b) => a.sort - b.sort || a.title.localeCompare(b.title, "ru"))
 }
 
@@ -68,8 +72,8 @@ function getStackHeight(items: BranchLayout[], gap: number) {
   return items.reduce((total, item) => total + item.height, 0) + gap * (items.length - 1)
 }
 
-function buildBranchLayout(branch: Branch, data: AppData): BranchLayout {
-  const children = getChildren(data, branch.id).map((child) => buildBranchLayout(child, data))
+function buildBranchLayout(branch: Branch, data: AppData, showAll: boolean): BranchLayout {
+  const children = getVisibleChildren(data, branch.id, showAll).map((child) => buildBranchLayout(child, data, showAll))
   const nodeHeight = estimateNodeHeight(branch)
   const childrenHeight = getStackHeight(children, VERTICAL_GAP)
   const childrenWidth = children.length ? Math.max(...children.map((child) => child.width)) : 0
@@ -90,6 +94,7 @@ function placeBranchLayout({
   edges,
   nodes,
   parentId,
+  showAll,
   side,
   x,
   y,
@@ -100,6 +105,7 @@ function placeBranchLayout({
   edges: MapEdge[]
   nodes: MapNode[]
   parentId: string | null
+  showAll: boolean
   side: Side
   x: number
   y: number
@@ -107,7 +113,7 @@ function placeBranchLayout({
   nodes.push({
     id: layout.branch.id,
     branch: layout.branch,
-    tasks: getBranchMapTasks(layout.branch.id, data),
+    tasks: getBranchMapTasks(layout.branch.id, data, showAll),
     parentId,
     depth,
     side,
@@ -131,6 +137,7 @@ function placeBranchLayout({
       edges,
       nodes,
       parentId: layout.branch.id,
+      showAll,
       side,
       x: x + (side === "right" ? 1 : -1) * (NODE_WIDTH + HORIZONTAL_GAP),
       y: childY,
@@ -144,12 +151,14 @@ function placeRootLayouts({
   edges,
   layouts,
   nodes,
+  showAll,
   side,
 }: {
   data: AppData
   edges: MapEdge[]
   layouts: BranchLayout[]
   nodes: MapNode[]
+  showAll: boolean
   side: Side
 }) {
   const rootsHeight = getStackHeight(layouts, ROOT_GAP)
@@ -159,21 +168,21 @@ function placeRootLayouts({
 
   for (const layout of layouts) {
     const y = cursor + layout.height / 2
-    placeBranchLayout({ layout, data, depth: 0, edges, nodes, parentId: null, side, x, y })
+    placeBranchLayout({ layout, data, depth: 0, edges, nodes, parentId: null, showAll, side, x, y })
     cursor += layout.height + ROOT_GAP
   }
 }
 
-function buildMindMapLayout(data: AppData) {
-  const rootLayouts = getChildren(data, null).map((branch) => buildBranchLayout(branch, data))
+function buildMindMapLayout(data: AppData, showAll: boolean) {
+  const rootLayouts = getVisibleChildren(data, null, showAll).map((branch) => buildBranchLayout(branch, data, showAll))
   const rightRootCount = Math.ceil(rootLayouts.length / 2)
   const rightRoots = rootLayouts.slice(0, rightRootCount)
   const leftRoots = rootLayouts.slice(rightRootCount)
   const nodes: MapNode[] = []
   const edges: MapEdge[] = []
 
-  placeRootLayouts({ data, edges, layouts: rightRoots, nodes, side: "right" })
-  placeRootLayouts({ data, edges, layouts: leftRoots, nodes, side: "left" })
+  placeRootLayouts({ data, edges, layouts: rightRoots, nodes, showAll, side: "right" })
+  placeRootLayouts({ data, edges, layouts: leftRoots, nodes, showAll, side: "left" })
 
   const bounds = nodes.reduce(
     (result, node) => ({
@@ -205,7 +214,7 @@ function buildMindMapLayout(data: AppData) {
 }
 
 export function MindMap({ data }: { data: AppData }) {
-  const [showPausedTasks, setShowPausedTasks] = useState(false)
+  const [showAll, setShowAll] = useState(false)
   const [tooltip, setTooltip] = useState<TooltipState>(null)
   const roots = getChildren(data, null)
 
@@ -213,7 +222,7 @@ export function MindMap({ data }: { data: AppData }) {
     return <Card className="p-6 text-sm text-muted-foreground">Дерево пустое. Создайте первое направление.</Card>
   }
 
-  const layout = buildMindMapLayout(data)
+  const layout = buildMindMapLayout(data, showAll)
   const nodesById = new Map(layout.nodes.map((node) => [node.id, node]))
 
   return (
@@ -221,11 +230,14 @@ export function MindMap({ data }: { data: AppData }) {
       <label className="mb-2 inline-flex items-center gap-2 text-xs font-medium text-muted-foreground">
         <input
           type="checkbox"
-          checked={showPausedTasks}
-          onChange={(event) => setShowPausedTasks(event.target.checked)}
+          checked={showAll}
+          onChange={(event) => {
+            setShowAll(event.target.checked)
+            setTooltip(null)
+          }}
           className="size-4 rounded border"
         />
-        Показывать задачи на паузе
+        Показать всё
       </label>
 
       <div className="overflow-auto rounded-lg border bg-white p-2">
@@ -265,7 +277,7 @@ export function MindMap({ data }: { data: AppData }) {
               key={node.id}
               branch={node.branch}
               tasks={node.tasks}
-              showPausedTasks={showPausedTasks}
+              showAll={showAll}
               depth={node.depth}
               height={node.height}
               x={node.x}
@@ -297,7 +309,7 @@ export function MindMap({ data }: { data: AppData }) {
 function BranchBubble({
   branch,
   tasks,
-  showPausedTasks,
+  showAll,
   depth,
   height,
   x,
@@ -306,16 +318,16 @@ function BranchBubble({
 }: {
   branch: Branch
   tasks: Task[]
-  showPausedTasks: boolean
+  showAll: boolean
   depth: number
   height: number
   x: number
   y: number
   onTooltipChange: (tooltip: TooltipState) => void
 }) {
-  const visibleTasks = tasks.filter((task) => task.status === "in_progress" || (showPausedTasks && task.status === "paused"))
+  const visibleTasks = tasks.filter((task) => task.status === "in_progress" || (showAll && task.status === "paused"))
   const inProgressCount = tasks.filter((task) => task.status === "in_progress").length
-  const pausedCount = showPausedTasks ? tasks.filter((task) => task.status === "paused").length : 0
+  const pausedCount = showAll ? tasks.filter((task) => task.status === "paused").length : 0
 
   function showTooltip(element: HTMLDivElement) {
     if (!visibleTasks.length) return
