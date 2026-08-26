@@ -8,14 +8,23 @@ import { Card } from "@/components/ui"
 import { cn } from "@/lib/utils"
 import type { AppData, Branch, Task } from "@/types"
 
-const CENTER_RADIUS = 260
-const LEVEL_GAP = 190
 const NODE_WIDTH = 220
 const NODE_MIN_HEIGHT = 56
-const NODE_GAP = 26
+const HORIZONTAL_GAP = 96
+const VERTICAL_GAP = 28
+const ROOT_GAP = 48
 const CENTER_SIZE = 128
 const MAP_PADDING = 80
-const OVERLAP_PASSES = 120
+
+type Side = "left" | "right"
+
+type BranchLayout = {
+  branch: Branch
+  children: BranchLayout[]
+  height: number
+  nodeHeight: number
+  width: number
+}
 
 type MapNode = {
   id: string
@@ -23,6 +32,7 @@ type MapNode = {
   inProgressTasks: Task[]
   parentId: string | null
   depth: number
+  side: Side
   height: number
   x: number
   y: number
@@ -39,139 +49,123 @@ function getBranchInProgressTasks(branchId: string, data: AppData) {
     .sort((a, b) => a.sort - b.sort || a.title.localeCompare(b.title, "ru"))
 }
 
-function getBranchLeafCount(branch: Branch, data: AppData): number {
-  const children = getChildren(data, branch.id)
-  if (!children.length) return 1
-  return children.reduce((total, child) => total + getBranchLeafCount(child, data), 0)
-}
-
-function polarPoint(angle: number, radius: number) {
-  const radians = (angle * Math.PI) / 180
-  return {
-    x: Math.cos(radians) * radius,
-    y: Math.sin(radians) * radius,
-  }
-}
-
 function estimateNodeHeight(branch: Branch) {
-  const visibleLength = branch.title.length + branch.tag.length + (branch.timing ? 12 : 0)
-  const lines = Math.max(1, Math.ceil(visibleLength / 22))
-  return Math.max(NODE_MIN_HEIGHT, lines * 22 + 24)
+  const visibleLength = branch.title.length + branch.tag.length + (branch.timing ? 18 : 0)
+  const lines = Math.max(1, Math.ceil(visibleLength / 14))
+  return Math.max(NODE_MIN_HEIGHT, lines * 24 + 28)
 }
 
-function getNodeRect(node: Pick<MapNode, "x" | "y" | "height">) {
+function getStackHeight(items: BranchLayout[], gap: number) {
+  if (!items.length) return 0
+  return items.reduce((total, item) => total + item.height, 0) + gap * (items.length - 1)
+}
+
+function buildBranchLayout(branch: Branch, data: AppData): BranchLayout {
+  const children = getChildren(data, branch.id).map((child) => buildBranchLayout(child, data))
+  const nodeHeight = estimateNodeHeight(branch)
+  const childrenHeight = getStackHeight(children, VERTICAL_GAP)
+  const childrenWidth = children.length ? Math.max(...children.map((child) => child.width)) : 0
+
   return {
-    left: node.x - NODE_WIDTH / 2 - NODE_GAP,
-    right: node.x + NODE_WIDTH / 2 + NODE_GAP,
-    top: node.y - node.height / 2 - NODE_GAP,
-    bottom: node.y + node.height / 2 + NODE_GAP,
+    branch,
+    children,
+    height: Math.max(nodeHeight, childrenHeight),
+    nodeHeight,
+    width: NODE_WIDTH + (children.length ? HORIZONTAL_GAP + childrenWidth : 0),
   }
 }
 
-function pushNodeFromCenter(node: MapNode) {
-  const rect = getNodeRect(node)
-  const centerRect = {
-    left: -CENTER_SIZE / 2 - NODE_GAP,
-    right: CENTER_SIZE / 2 + NODE_GAP,
-    top: -CENTER_SIZE / 2 - NODE_GAP,
-    bottom: CENTER_SIZE / 2 + NODE_GAP,
+function placeBranchLayout({
+  layout,
+  data,
+  depth,
+  edges,
+  nodes,
+  parentId,
+  side,
+  x,
+  y,
+}: {
+  layout: BranchLayout
+  data: AppData
+  depth: number
+  edges: MapEdge[]
+  nodes: MapNode[]
+  parentId: string | null
+  side: Side
+  x: number
+  y: number
+}) {
+  nodes.push({
+    id: layout.branch.id,
+    branch: layout.branch,
+    inProgressTasks: getBranchInProgressTasks(layout.branch.id, data),
+    parentId,
+    depth,
+    side,
+    height: layout.nodeHeight,
+    x,
+    y,
+  })
+  edges.push({ fromId: parentId, toId: layout.branch.id })
+
+  if (!layout.children.length) return
+
+  const childrenHeight = getStackHeight(layout.children, VERTICAL_GAP)
+  let cursor = y - childrenHeight / 2
+
+  for (const child of layout.children) {
+    const childY = cursor + child.height / 2
+    placeBranchLayout({
+      layout: child,
+      data,
+      depth: depth + 1,
+      edges,
+      nodes,
+      parentId: layout.branch.id,
+      side,
+      x: x + (side === "right" ? 1 : -1) * (NODE_WIDTH + HORIZONTAL_GAP),
+      y: childY,
+    })
+    cursor += child.height + VERTICAL_GAP
   }
-  const overlapX = Math.min(rect.right, centerRect.right) - Math.max(rect.left, centerRect.left)
-  const overlapY = Math.min(rect.bottom, centerRect.bottom) - Math.max(rect.top, centerRect.top)
-
-  if (overlapX <= 0 || overlapY <= 0) return false
-
-  const length = Math.hypot(node.x, node.y) || 1
-  node.x += (node.x / length) * Math.max(overlapX, 12)
-  node.y += (node.y / length) * Math.max(overlapY, 12)
-  return true
 }
 
-function pushNodesApart(first: MapNode, second: MapNode) {
-  const firstRect = getNodeRect(first)
-  const secondRect = getNodeRect(second)
-  const overlapX = Math.min(firstRect.right, secondRect.right) - Math.max(firstRect.left, secondRect.left)
-  const overlapY = Math.min(firstRect.bottom, secondRect.bottom) - Math.max(firstRect.top, secondRect.top)
+function placeRootLayouts({
+  data,
+  edges,
+  layouts,
+  nodes,
+  side,
+}: {
+  data: AppData
+  edges: MapEdge[]
+  layouts: BranchLayout[]
+  nodes: MapNode[]
+  side: Side
+}) {
+  const rootsHeight = getStackHeight(layouts, ROOT_GAP)
+  let cursor = -rootsHeight / 2
+  const direction = side === "right" ? 1 : -1
+  const x = direction * (CENTER_SIZE / 2 + HORIZONTAL_GAP + NODE_WIDTH / 2)
 
-  if (overlapX <= 0 || overlapY <= 0) return false
-
-  const deltaX = second.x - first.x
-  const deltaY = second.y - first.y
-
-  if (overlapX < overlapY) {
-    const push = overlapX / 2 + 1
-    const direction = deltaX >= 0 ? 1 : -1
-    first.x -= push * direction
-    second.x += push * direction
-  } else {
-    const push = overlapY / 2 + 1
-    const direction = deltaY >= 0 ? 1 : -1
-    first.y -= push * direction
-    second.y += push * direction
-  }
-
-  return true
-}
-
-function resolveNodeOverlaps(nodes: MapNode[]) {
-  for (let pass = 0; pass < OVERLAP_PASSES; pass += 1) {
-    let changed = false
-
-    for (const node of nodes) {
-      changed = pushNodeFromCenter(node) || changed
-    }
-
-    for (let index = 0; index < nodes.length; index += 1) {
-      for (let nextIndex = index + 1; nextIndex < nodes.length; nextIndex += 1) {
-        changed = pushNodesApart(nodes[index], nodes[nextIndex]) || changed
-      }
-    }
-
-    if (!changed) break
+  for (const layout of layouts) {
+    const y = cursor + layout.height / 2
+    placeBranchLayout({ layout, data, depth: 0, edges, nodes, parentId: null, side, x, y })
+    cursor += layout.height + ROOT_GAP
   }
 }
 
 function buildMindMapLayout(data: AppData) {
-  const roots = getChildren(data, null)
+  const rootLayouts = getChildren(data, null).map((branch) => buildBranchLayout(branch, data))
+  const rightRootCount = Math.ceil(rootLayouts.length / 2)
+  const rightRoots = rootLayouts.slice(0, rightRootCount)
+  const leftRoots = rootLayouts.slice(rightRootCount)
   const nodes: MapNode[] = []
   const edges: MapEdge[] = []
 
-  function placeBranch(branch: Branch, angle: number, radius: number, spread: number, parentId: string | null) {
-    const point = polarPoint(angle, radius)
-    nodes.push({
-      id: branch.id,
-      branch,
-      inProgressTasks: getBranchInProgressTasks(branch.id, data),
-      parentId,
-      depth: Math.round((radius - CENTER_RADIUS) / LEVEL_GAP),
-      height: estimateNodeHeight(branch),
-      x: point.x,
-      y: point.y,
-    })
-    edges.push({ fromId: parentId, toId: branch.id })
-
-    const children = getChildren(data, branch.id)
-    if (!children.length) return
-
-    const totalLeaves = children.reduce((total, child) => total + getBranchLeafCount(child, data), 0)
-    let cursor = angle - spread / 2
-
-    for (const child of children) {
-      const childLeaves = getBranchLeafCount(child, data)
-      const childSpread = (childLeaves / totalLeaves) * spread
-      const childAngle = cursor + childSpread / 2
-      placeBranch(child, childAngle, radius + LEVEL_GAP, Math.max(18, childSpread * 0.9), branch.id)
-      cursor += childSpread
-    }
-  }
-
-  const rootStep = 360 / roots.length
-  roots.forEach((branch, index) => {
-    const angle = -90 + index * rootStep
-    placeBranch(branch, angle, CENTER_RADIUS, Math.min(120, rootStep * 0.82), null)
-  })
-
-  resolveNodeOverlaps(nodes)
+  placeRootLayouts({ data, edges, layouts: rightRoots, nodes, side: "right" })
+  placeRootLayouts({ data, edges, layouts: leftRoots, nodes, side: "left" })
 
   const bounds = nodes.reduce(
     (result, node) => ({
@@ -220,14 +214,17 @@ export function MindMap({ data }: { data: AppData }) {
             const child = nodesById.get(edge.toId)
             const parent = edge.fromId ? nodesById.get(edge.fromId) : layout.center
             if (!child || !parent) return null
+            const direction = child.side === "right" ? 1 : -1
+            const parentEdgeX = parent.x + direction * (edge.fromId ? NODE_WIDTH / 2 : CENTER_SIZE / 2)
+            const childEdgeX = child.x - direction * (NODE_WIDTH / 2)
+            const middleX = parentEdgeX + (childEdgeX - parentEdgeX) / 2
+            const path = `M ${parentEdgeX} ${parent.y} H ${middleX} V ${child.y} H ${childEdgeX}`
 
             return (
-              <line
+              <path
                 key={`${edge.fromId ?? "root"}-${edge.toId}`}
-                x1={parent.x}
-                y1={parent.y}
-                x2={child.x}
-                y2={child.y}
+                d={path}
+                fill="none"
                 className="stroke-slate-200"
                 strokeWidth="2"
               />
@@ -284,7 +281,7 @@ function BranchBubble({
           branch.status === "paused" && "text-muted-foreground line-through",
         )}
       >
-        <BranchTitle branch={branch} />
+        <BranchTitle branch={branch} className="min-w-0 break-words" />
         <BranchTag tag={branch.tag} />
         <BranchTimingBadge branch={branch} compact />
         <BranchStatusDot status={branch.status} />
