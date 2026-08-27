@@ -12,6 +12,8 @@ import type { AppData, Branch, Task } from "@/types"
 
 const NODE_WIDTH = 160
 const NODE_MIN_HEIGHT = 34
+const NODE_LINE_HEIGHT = 16
+const NODE_VERTICAL_PADDING = 8
 const HORIZONTAL_GAP = 36
 const VERTICAL_GAP = 10
 const ROOT_GAP = 16
@@ -67,8 +69,8 @@ function getBranchMapTasks(branchId: string, data: AppData, showAll: boolean) {
 
 function estimateNodeHeight(branch: Branch) {
   const visibleLength = branch.title.length + (branch.timing ? 12 : 0)
-  const lines = Math.max(1, Math.ceil(visibleLength / 18))
-  return Math.max(NODE_MIN_HEIGHT, lines * 18 + 12)
+  const lines = Math.max(1, Math.ceil(visibleLength / 13))
+  return Math.max(NODE_MIN_HEIGHT, lines * NODE_LINE_HEIGHT + NODE_VERTICAL_PADDING)
 }
 
 function getStackHeight(items: BranchLayout[], gap: number) {
@@ -369,9 +371,9 @@ function BranchBubble({
     >
       <Link
         href={`/branches/${branch.id}`}
-        style={{ minHeight: height }}
+        style={{ height }}
         className={cn(
-          "flex min-h-8 items-center justify-center gap-1 rounded-full border bg-white px-2 py-1 text-center text-xs font-semibold shadow-sm transition hover:border-blue-200 hover:bg-blue-50",
+          "flex box-border min-h-8 items-center justify-center gap-1 rounded-full border bg-white px-2 py-1 text-center text-xs font-semibold leading-[16px] shadow-sm transition hover:border-blue-200 hover:bg-blue-50",
           depth === 0 && "border-blue-200 bg-blue-50 text-blue-950",
           branch.status === "paused" && "text-muted-foreground line-through",
         )}
