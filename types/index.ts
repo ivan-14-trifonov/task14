@@ -46,6 +46,7 @@ export type AppData = {
 
 export type BranchTaskCounts = {
   inProgress: number
+  recurring: number
   planned: number
   done: number
 }

@@ -7,11 +7,12 @@ export function getBranchTaskCounts(branchId: string, data: AppData): BranchTask
     (counts, task) => {
       if (!branchIds.has(task.branchId)) return counts
       if (task.status === "in_progress") counts.inProgress += 1
+      if (task.status === "recurring") counts.recurring += 1
       if (task.status === "planned") counts.planned += 1
       if (task.status === "done") counts.done += 1
       return counts
     },
-    { inProgress: 0, planned: 0, done: 0 },
+    { inProgress: 0, recurring: 0, planned: 0, done: 0 },
   )
 }
 
@@ -20,10 +21,11 @@ export function getDirectBranchTaskCounts(branchId: string, data: AppData): Bran
     (counts, task) => {
       if (task.branchId !== branchId) return counts
       if (task.status === "in_progress") counts.inProgress += 1
+      if (task.status === "recurring") counts.recurring += 1
       if (task.status === "planned") counts.planned += 1
       if (task.status === "done") counts.done += 1
       return counts
     },
-    { inProgress: 0, planned: 0, done: 0 },
+    { inProgress: 0, recurring: 0, planned: 0, done: 0 },
   )
 }

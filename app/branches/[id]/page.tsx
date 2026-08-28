@@ -129,7 +129,7 @@ export default async function BranchPage({
               <BranchStatusDot status={branch.status} />
             </div>
             <div className="mt-3">
-              <BranchCounts inProgress={branchCounts.inProgress} planned={branchCounts.planned} />
+              <BranchCounts inProgress={branchCounts.inProgress} recurring={branchCounts.recurring} planned={branchCounts.planned} />
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -210,7 +210,7 @@ export default async function BranchPage({
                           <BranchTimingBadge branch={child} compact />
                         </div>
                         <div className="mt-2">
-                          <BranchCounts inProgress={childCounts.inProgress} planned={childCounts.planned} />
+                          <BranchCounts inProgress={childCounts.inProgress} recurring={childCounts.recurring} planned={childCounts.planned} />
                         </div>
                       </div>
                       <LinkButton href={`/branches/${child.id}`} variant="ghost">
