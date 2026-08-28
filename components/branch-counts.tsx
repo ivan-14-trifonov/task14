@@ -14,7 +14,7 @@ export function BranchCounts({
   if (inProgress === 0 && recurring === 0 && planned === 0) return null
 
   return (
-    <div className={cn("flex flex-wrap items-center gap-1", compact ? "mt-0.5" : "rounded-md bg-slate-100 px-2 py-1")}>
+    <div className={cn("flex flex-wrap items-center gap-1", compact && "mt-0.5")}>
       {inProgress ? (
         <span
           className="inline-flex min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold leading-4 text-white"
