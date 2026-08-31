@@ -1,5 +1,4 @@
 import { Plus } from "lucide-react"
-import Link from "next/link"
 import { getChildren } from "@/lib/data/tree"
 import { BranchCard } from "@/components/branch-card"
 import { BranchForm } from "@/components/branch-form"
@@ -8,7 +7,6 @@ import { BranchSortableList } from "@/components/branch-sortable-list"
 import { DialogButton } from "@/components/dialog-button"
 import { MindMap } from "@/components/mind-map"
 import { Card } from "@/components/ui"
-import { cn } from "@/lib/utils"
 import type { AppData } from "@/types"
 
 export function TreeOverview({ data, view = "tree" }: { data: AppData; view?: "tree" | "mind-map" }) {
@@ -26,26 +24,6 @@ export function TreeOverview({ data, view = "tree" }: { data: AppData; view?: "t
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <div className="inline-flex rounded-md border bg-white p-1">
-              <Link
-                href="/"
-                className={cn(
-                  "rounded px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:text-foreground",
-                  !isMindMap && "bg-muted text-foreground",
-                )}
-              >
-                Дерево
-              </Link>
-              <Link
-                href="/?view=mind-map"
-                className={cn(
-                  "rounded px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:text-foreground",
-                  isMindMap && "bg-muted text-foreground",
-                )}
-              >
-                Ментальная карта
-              </Link>
-            </div>
             {isMindMap ? null : <BranchSortModeButton />}
             <DialogButton
               title="Новая ветка"

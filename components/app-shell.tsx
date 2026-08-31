@@ -1,4 +1,4 @@
-import { Download, FolderTree, ListTodo } from "lucide-react"
+import { Download, FolderTree, ListTodo, Network } from "lucide-react"
 import { SignOutButton } from "@/components/auth-buttons"
 import { LinkButton } from "@/components/ui"
 import type { Session } from "next-auth"
@@ -16,6 +16,10 @@ export function AppShell({ children, session }: { children: React.ReactNode; ses
             <LinkButton href="/" variant="ghost">
               <FolderTree className="size-4" />
               Дерево
+            </LinkButton>
+            <LinkButton href="/?view=mind-map" variant="ghost">
+              <Network className="size-4" />
+              Ментальная карта
             </LinkButton>
             <LinkButton href="/tasks" variant="ghost">
               <ListTodo className="size-4" />
