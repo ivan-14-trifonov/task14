@@ -32,7 +32,13 @@ export function BranchCard({ branch, data }: { branch: Branch; data: AppData }) 
             <BranchStatusDot status={branch.status} />
           </div>
           <div className="mt-3">
-            <BranchCounts inProgress={counts.inProgress} recurring={counts.recurring} planned={counts.planned} tasks={countTasks} />
+            <BranchCounts
+              inProgress={counts.inProgress}
+              recurring={counts.recurring}
+              onDemand={counts.onDemand}
+              planned={counts.planned}
+              tasks={countTasks}
+            />
           </div>
         </Link>
         <div className="flex gap-1">
@@ -78,7 +84,14 @@ function BranchTreeNode({ branch, data }: { branch: Branch; data: AppData }) {
           <BranchStatusDot status={branch.status} />
         </div>
         <div className="mt-1">
-          <BranchCounts inProgress={counts.inProgress} recurring={counts.recurring} planned={counts.planned} tasks={countTasks} compact />
+          <BranchCounts
+            inProgress={counts.inProgress}
+            recurring={counts.recurring}
+            onDemand={counts.onDemand}
+            planned={counts.planned}
+            tasks={countTasks}
+            compact
+          />
         </div>
       </Link>
       {children.length ? (

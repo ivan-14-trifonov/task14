@@ -5,6 +5,7 @@ const taskLabels: Record<TaskStatus, string> = {
   in_progress: "В работе",
   planned: "В плане",
   recurring: "Повторяющаяся",
+  on_demand: "По требованию",
   paused: "На паузе",
   done: "Выполнено",
 }
@@ -17,6 +18,7 @@ export function StatusBadge({ status }: { status: TaskStatus }) {
         status === "in_progress" && "bg-red-50 text-red-700 ring-1 ring-red-200",
         status === "planned" && "bg-slate-100 text-slate-700 ring-1 ring-slate-200",
         status === "recurring" && "bg-white text-blue-700 ring-1 ring-blue-300",
+        status === "on_demand" && "bg-yellow-50 text-yellow-700 ring-1 ring-yellow-200",
         status === "paused" && "bg-yellow-50 text-yellow-700 ring-1 ring-yellow-200",
         status === "done" && "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
       )}

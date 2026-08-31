@@ -93,7 +93,9 @@ export default async function BranchPage({
     (task) => task.branchId !== id,
   )
   const isDoNowTask = (task: Task) =>
-    task.status === "recurring" || (task.status === "in_progress" && getTaskDailyState(task) !== "closed")
+    task.status === "recurring" ||
+    task.status === "on_demand" ||
+    (task.status === "in_progress" && getTaskDailyState(task) !== "closed")
   const currentDoNowTasks = tasks.filter(isDoNowTask)
   const nestedDoNowTasks = nestedTasks.filter(isDoNowTask)
   const currentOtherTasks = tasks.filter((task) => !isDoNowTask(task))
@@ -133,6 +135,7 @@ export default async function BranchPage({
               <BranchCounts
                 inProgress={branchCounts.inProgress}
                 recurring={branchCounts.recurring}
+                onDemand={branchCounts.onDemand}
                 planned={branchCounts.planned}
                 tasks={branchCountTasks}
               />
@@ -220,6 +223,7 @@ export default async function BranchPage({
                           <BranchCounts
                             inProgress={childCounts.inProgress}
                             recurring={childCounts.recurring}
+                            onDemand={childCounts.onDemand}
                             planned={childCounts.planned}
                             tasks={childCountTasks}
                           />

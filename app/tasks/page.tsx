@@ -16,7 +16,10 @@ export default async function TasksPage({
   const params = await searchParams
   const data = await getDataForPage()
   const status =
-    params.status === "in_progress" || params.status === "planned" || params.status === "recurring"
+    params.status === "in_progress" ||
+    params.status === "planned" ||
+    params.status === "recurring" ||
+    params.status === "on_demand"
       ? params.status
       : "all"
   const tasks = getFilteredTasks(data, {

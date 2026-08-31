@@ -62,7 +62,10 @@ function getBranchMapTasks(branchId: string, data: AppData, showAll: boolean) {
     .filter(
       (task) =>
         task.branchId === branchId &&
-        (task.status === "in_progress" || task.status === "recurring" || (showAll && task.status === "paused")),
+        (task.status === "in_progress" ||
+          task.status === "recurring" ||
+          task.status === "on_demand" ||
+          (showAll && task.status === "paused")),
     )
     .sort((a, b) => a.sort - b.sort || a.title.localeCompare(b.title, "ru"))
 }
@@ -308,6 +311,7 @@ export function MindMap({ data }: { data: AppData }) {
                     "mt-1.5 size-1.5 shrink-0 rounded-full",
                     task.status === "in_progress" && "bg-red-500",
                     task.status === "recurring" && "border border-blue-600 bg-transparent",
+                    task.status === "on_demand" && "bg-yellow-500",
                     task.status === "paused" && "bg-yellow-500",
                   )}
                   aria-hidden="true"
@@ -344,10 +348,15 @@ function BranchBubble({
   onTooltipChange: (tooltip: TooltipState) => void
 }) {
   const visibleTasks = tasks.filter(
-    (task) => task.status === "in_progress" || task.status === "recurring" || (showAll && task.status === "paused"),
+    (task) =>
+      task.status === "in_progress" ||
+      task.status === "recurring" ||
+      task.status === "on_demand" ||
+      (showAll && task.status === "paused"),
   )
   const inProgressCount = tasks.filter((task) => task.status === "in_progress").length
   const recurringCount = tasks.filter((task) => task.status === "recurring").length
+  const onDemandCount = tasks.filter((task) => task.status === "on_demand").length
   const pausedCount = showAll ? tasks.filter((task) => task.status === "paused").length : 0
 
   function showTooltip(element: HTMLDivElement) {
@@ -392,6 +401,11 @@ function BranchBubble({
             title="Повторяющиеся задачи"
           >
             {recurringCount}
+          </span>
+        ) : null}
+        {onDemandCount ? (
+          <span className="inline-flex min-w-4 items-center justify-center rounded-full bg-yellow-500 px-1 text-[10px] font-bold leading-4 text-white">
+            {onDemandCount}
           </span>
         ) : null}
         {pausedCount ? (

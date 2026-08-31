@@ -1,7 +1,7 @@
 import { z } from "zod"
 
 export const branchStatusSchema = z.union([z.literal("in_progress"), z.literal("timing"), z.literal("paused"), z.null()])
-export const taskStatusSchema = z.enum(["in_progress", "planned", "recurring", "paused", "done"])
+export const taskStatusSchema = z.enum(["in_progress", "planned", "recurring", "on_demand", "paused", "done"])
 export const taskDailyStatusSchema = z.enum(["worked", "closed"])
 const dateKeySchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
 

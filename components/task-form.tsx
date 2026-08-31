@@ -34,6 +34,7 @@ export function TaskForm({
           <option value="in_progress">В работе</option>
           <option value="planned">В плане</option>
           <option value="recurring">Повторяющаяся задача</option>
+          <option value="on_demand">Задача по требованию</option>
           <option value="done">Выполнено</option>
         </Select>
       </Label>

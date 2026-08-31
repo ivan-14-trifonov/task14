@@ -16,19 +16,23 @@ type TooltipPosition = {
 export function BranchCounts({
   inProgress,
   recurring,
+  onDemand,
   planned,
   tasks = [],
   compact = false,
 }: {
   inProgress: number
   recurring: number
+  onDemand: number
   planned: number
   tasks?: Task[]
   compact?: boolean
 }) {
   const [tooltipPosition, setTooltipPosition] = useState<TooltipPosition>(null)
-  if (inProgress === 0 && recurring === 0 && planned === 0) return null
-  const tooltipTasks = tasks.filter((task) => task.status === "in_progress" || task.status === "recurring")
+  if (inProgress === 0 && recurring === 0 && onDemand === 0 && planned === 0) return null
+  const tooltipTasks = tasks.filter(
+    (task) => task.status === "in_progress" || task.status === "recurring" || task.status === "on_demand",
+  )
 
   function showTooltip(element: HTMLDivElement) {
     if (!tooltipTasks.length) return
@@ -72,6 +76,14 @@ export function BranchCounts({
             {recurring}
           </span>
         ) : null}
+        {onDemand ? (
+          <span
+            className="inline-flex min-w-4 items-center justify-center rounded-full bg-yellow-500 px-1 text-[10px] font-bold leading-4 text-white"
+            title="По требованию"
+          >
+            {onDemand}
+          </span>
+        ) : null}
         {planned ? (
           <span
             className="inline-flex min-w-4 items-center justify-center rounded-full bg-slate-200 px-1 text-[10px] font-bold leading-4 text-slate-600"
@@ -94,6 +106,7 @@ export function BranchCounts({
                     "mt-1.5 size-1.5 shrink-0 rounded-full",
                     task.status === "in_progress" && "bg-red-500",
                     task.status === "recurring" && "border border-blue-600 bg-transparent",
+                    task.status === "on_demand" && "bg-yellow-500",
                   )}
                   aria-hidden="true"
                 />

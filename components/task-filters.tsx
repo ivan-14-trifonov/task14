@@ -26,6 +26,7 @@ export function TaskFilters({
             <option value={"in_progress" satisfies TaskStatus}>В работе</option>
             <option value={"planned" satisfies TaskStatus}>В плане</option>
             <option value={"recurring" satisfies TaskStatus}>Повторяющиеся</option>
+            <option value={"on_demand" satisfies TaskStatus}>По требованию</option>
           </Select>
         </Label>
       ) : null}
