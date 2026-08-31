@@ -19,7 +19,8 @@ export default async function TasksPage({
     params.status === "in_progress" ||
     params.status === "planned" ||
     params.status === "recurring" ||
-    params.status === "on_demand"
+    params.status === "on_demand" ||
+    params.status === "period"
       ? params.status
       : "all"
   const tasks = getFilteredTasks(data, {

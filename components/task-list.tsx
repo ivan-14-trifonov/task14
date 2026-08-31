@@ -7,6 +7,7 @@ import { StatusBadge } from "@/components/status-badge"
 import { Button, Card } from "@/components/ui"
 import { TaskDailyControls } from "@/components/task-daily-controls"
 import { TaskForm } from "@/components/task-form"
+import { TaskStatusControls } from "@/components/task-status-controls"
 import type { AppData, Task } from "@/types"
 
 export function TaskList({ data, tasks, archive = false }: { data: AppData; tasks: Task[]; archive?: boolean }) {
@@ -24,6 +25,7 @@ export function TaskList({ data, tasks, archive = false }: { data: AppData; task
                 <h3 className="font-medium">{task.title}</h3>
                 <StatusBadge status={task.status} />
               </div>
+              <TaskStatusControls task={task} />
               {task.description ? <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">{task.description}</p> : null}
               {!archive ? <TaskDailyControls task={task} /> : null}
               <p className="mt-3 text-xs text-muted-foreground">

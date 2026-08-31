@@ -72,6 +72,12 @@ export async function restoreTaskAction(formData: FormData) {
   refresh()
 }
 
+export async function setTaskStatusAction(formData: FormData) {
+  await requireAdmin()
+  await mutations.changeTaskStatus(getString(formData, "id"), getString(formData, "status"))
+  refresh()
+}
+
 export async function markTaskWorkedTodayAction(formData: FormData) {
   await requireAdmin()
   await mutations.changeTaskDailyStatus(getString(formData, "id"), "worked")
