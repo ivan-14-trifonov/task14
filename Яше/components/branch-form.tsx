@@ -1,9 +1,8 @@
 import { Save } from "lucide-react"
 import { createBranchAction, updateBranchAction } from "@/lib/data/actions"
 import { getTodayKey } from "@/lib/data/daily"
-import { BranchLevelSelect } from "@/components/branch-level-select"
 import { BranchStatusFields } from "@/components/branch-status-fields"
-import { Button, Input, Label } from "@/components/ui"
+import { Button, Input, Label, Select } from "@/components/ui"
 import type { AppData, Branch } from "@/types"
 
 export function BranchForm({
@@ -17,6 +16,9 @@ export function BranchForm({
   defaultParentId?: string | null
   openAfterCreate?: boolean
 }) {
+  const branches = Object.values(data.branches)
+    .filter((item) => item.id !== branch?.id)
+    .sort((a, b) => a.title.localeCompare(b.title, "ru"))
   const action = branch ? updateBranchAction : createBranchAction
   const timingStartDate = branch?.timing?.startDate ?? getTodayKey()
   const timingDailyMinutes = branch?.timing?.dailyMinutes ?? 30
@@ -33,15 +35,17 @@ export function BranchForm({
         Короткий тег
         <Input name="tag" maxLength={24} defaultValue={branch?.tag ?? ""} placeholder="Например: MVP" />
       </Label>
-      <BranchLevelSelect
-        data={data}
-        name="parentId"
-        label="Родительская ветка"
-        defaultValue={branch?.parentId ?? defaultParentId ?? ""}
-        emptyValue=""
-        emptyLabel="Корневое направление"
-        excludeBranchId={branch?.id}
-      />
+      <Label>
+        Родительская ветка
+        <Select name="parentId" defaultValue={branch?.parentId ?? defaultParentId ?? ""}>
+          <option value="">Корневое направление</option>
+          {branches.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.title}
+            </option>
+          ))}
+        </Select>
+      </Label>
       <BranchStatusFields defaultStatus={branch?.status ?? null} timingStartDate={timingStartDate} timingDailyMinutes={timingDailyMinutes} />
       <Button type="submit">
         <Save className="size-4" />

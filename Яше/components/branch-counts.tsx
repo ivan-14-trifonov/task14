@@ -1,24 +1,20 @@
 import { cn } from "@/lib/utils"
-import type { Task } from "@/types"
 
 export function BranchCounts({
   inProgress,
   recurring,
   planned,
-  tasks = [],
   compact = false,
 }: {
   inProgress: number
   recurring: number
   planned: number
-  tasks?: Task[]
   compact?: boolean
 }) {
   if (inProgress === 0 && recurring === 0 && planned === 0) return null
-  const tooltipTasks = tasks.filter((task) => task.status === "in_progress" || task.status === "recurring")
 
   return (
-    <div className={cn("group/counts relative flex w-fit flex-wrap items-center gap-1", compact && "mt-0.5")}>
+    <div className={cn("flex flex-wrap items-center gap-1", compact && "mt-0.5")}>
       {inProgress ? (
         <span
           className="inline-flex min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold leading-4 text-white"
@@ -42,25 +38,6 @@ export function BranchCounts({
         >
           {planned}
         </span>
-      ) : null}
-      {tooltipTasks.length ? (
-        <div className="pointer-events-none absolute left-1/2 top-full z-[9999] mt-2 hidden w-64 -translate-x-1/2 rounded-md border bg-white px-4 py-3 text-left text-xs shadow-2xl group-hover/counts:block">
-          <ul className="space-y-1 text-muted-foreground">
-            {tooltipTasks.map((task) => (
-              <li key={task.id} className="flex gap-2">
-                <span
-                  className={cn(
-                    "mt-1.5 size-1.5 shrink-0 rounded-full",
-                    task.status === "in_progress" && "bg-red-500",
-                    task.status === "recurring" && "border border-blue-600 bg-transparent",
-                  )}
-                  aria-hidden="true"
-                />
-                <span className="min-w-0 break-words">{task.title}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
       ) : null}
     </div>
   )

@@ -16,7 +16,7 @@ import { TaskList } from "@/components/task-list"
 import { Card, LinkButton } from "@/components/ui"
 import { requireAdmin } from "@/lib/auth"
 import { deleteBranchAction, pauseBranchAction, resumeBranchAction } from "@/lib/data/actions"
-import { getBranchCountTasks, getBranchTaskCounts } from "@/lib/data/counts"
+import { getBranchTaskCounts } from "@/lib/data/counts"
 import { getTaskDailyState } from "@/lib/data/daily"
 import { getDataForPage, getFilteredTasks } from "@/lib/data/queries"
 import { getBranchPath, getChildren } from "@/lib/data/tree"
@@ -81,7 +81,6 @@ export default async function BranchPage({
 
   const children = getChildren(data, id)
   const branchCounts = getBranchTaskCounts(id, data)
-  const branchCountTasks = getBranchCountTasks(id, data)
   const tasks = getFilteredTasks(data, { status: "all", branchId: id, includeDescendants: false }).filter(
     (task) => task.status !== "done",
   )
@@ -130,12 +129,7 @@ export default async function BranchPage({
               <BranchStatusDot status={branch.status} />
             </div>
             <div className="mt-3">
-              <BranchCounts
-                inProgress={branchCounts.inProgress}
-                recurring={branchCounts.recurring}
-                planned={branchCounts.planned}
-                tasks={branchCountTasks}
-              />
+              <BranchCounts inProgress={branchCounts.inProgress} recurring={branchCounts.recurring} planned={branchCounts.planned} />
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -205,7 +199,6 @@ export default async function BranchPage({
             <div className="grid gap-3 md:grid-cols-2">
               {children.map((child) => {
                 const childCounts = getBranchTaskCounts(child.id, data)
-                const childCountTasks = getBranchCountTasks(child.id, data)
                 return (
                   <Card key={child.id} className="p-4">
                     <div className="flex items-start justify-between gap-3">
@@ -217,12 +210,7 @@ export default async function BranchPage({
                           <BranchTimingBadge branch={child} compact />
                         </div>
                         <div className="mt-2">
-                          <BranchCounts
-                            inProgress={childCounts.inProgress}
-                            recurring={childCounts.recurring}
-                            planned={childCounts.planned}
-                            tasks={childCountTasks}
-                          />
+                          <BranchCounts inProgress={childCounts.inProgress} recurring={childCounts.recurring} planned={childCounts.planned} />
                         </div>
                       </div>
                       <LinkButton href={`/branches/${child.id}`} variant="ghost">

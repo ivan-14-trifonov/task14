@@ -1,5 +1,4 @@
 import { Search } from "lucide-react"
-import { BranchLevelSelect } from "@/components/branch-level-select"
 import { Button, Input, Label, Select } from "@/components/ui"
 import type { AppData, TaskStatus } from "@/types"
 
@@ -12,6 +11,8 @@ export function TaskFilters({
   defaults: { q?: string; status?: string; branchId?: string }
   archive?: boolean
 }) {
+  const branches = Object.values(data.branches).sort((a, b) => a.title.localeCompare(b.title, "ru"))
+
   return (
     <form className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-[1fr_180px_220px_auto]">
       <Label>
@@ -29,14 +30,17 @@ export function TaskFilters({
           </Select>
         </Label>
       ) : null}
-      <BranchLevelSelect
-        data={data}
-        name="branchId"
-        label="Ветка"
-        defaultValue={defaults.branchId ?? "all"}
-        emptyValue="all"
-        emptyLabel="Все ветки"
-      />
+      <Label>
+        Ветка
+        <Select name="branchId" defaultValue={defaults.branchId ?? "all"}>
+          <option value="all">Все ветки</option>
+          {branches.map((branch) => (
+            <option key={branch.id} value={branch.id}>
+              {branch.title}
+            </option>
+          ))}
+        </Select>
+      </Label>
       <div className="flex items-end">
         <Button type="submit" variant="secondary" className="w-full">
           <Search className="size-4" />

@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { Folder, Pencil, Plus } from "lucide-react"
-import { getDirectBranchCountTasks, getDirectBranchTaskCounts } from "@/lib/data/counts"
+import { getDirectBranchTaskCounts } from "@/lib/data/counts"
 import { getChildren } from "@/lib/data/tree"
 import { BranchCounts } from "@/components/branch-counts"
 import { BranchForm } from "@/components/branch-form"
@@ -16,7 +16,6 @@ import type { AppData, Branch } from "@/types"
 export function BranchCard({ branch, data }: { branch: Branch; data: AppData }) {
   const children = getChildren(data, branch.id)
   const counts = getDirectBranchTaskCounts(branch.id, data)
-  const countTasks = getDirectBranchCountTasks(branch.id, data)
 
   return (
     <Card className="p-4">
@@ -32,7 +31,7 @@ export function BranchCard({ branch, data }: { branch: Branch; data: AppData }) 
             <BranchStatusDot status={branch.status} />
           </div>
           <div className="mt-3">
-            <BranchCounts inProgress={counts.inProgress} recurring={counts.recurring} planned={counts.planned} tasks={countTasks} />
+            <BranchCounts inProgress={counts.inProgress} recurring={counts.recurring} planned={counts.planned} />
           </div>
         </Link>
         <div className="flex gap-1">
@@ -66,7 +65,6 @@ export function BranchCard({ branch, data }: { branch: Branch; data: AppData }) 
 function BranchTreeNode({ branch, data }: { branch: Branch; data: AppData }) {
   const children = getChildren(data, branch.id)
   const counts = getDirectBranchTaskCounts(branch.id, data)
-  const countTasks = getDirectBranchCountTasks(branch.id, data)
 
   return (
     <div className="grid gap-2">
@@ -78,7 +76,7 @@ function BranchTreeNode({ branch, data }: { branch: Branch; data: AppData }) {
           <BranchStatusDot status={branch.status} />
         </div>
         <div className="mt-1">
-          <BranchCounts inProgress={counts.inProgress} recurring={counts.recurring} planned={counts.planned} tasks={countTasks} compact />
+          <BranchCounts inProgress={counts.inProgress} recurring={counts.recurring} planned={counts.planned} compact />
         </div>
       </Link>
       {children.length ? (

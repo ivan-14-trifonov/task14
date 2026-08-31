@@ -1,6 +1,5 @@
 import { Save } from "lucide-react"
 import { createTaskAction, updateTaskAction } from "@/lib/data/actions"
-import { BranchLevelSelect } from "@/components/branch-level-select"
 import { Button, Input, Label, Select, Textarea } from "@/components/ui"
 import type { AppData, Task } from "@/types"
 
@@ -13,6 +12,7 @@ export function TaskForm({
   task?: Task
   defaultBranchId?: string
 }) {
+  const branches = Object.values(data.branches).sort((a, b) => a.title.localeCompare(b.title, "ru"))
   const action = task ? updateTaskAction : createTaskAction
 
   return (
@@ -26,7 +26,19 @@ export function TaskForm({
         Описание
         <Textarea name="description" defaultValue={task?.description ?? ""} />
       </Label>
-      <BranchLevelSelect data={data} name="branchId" label="Ветка" defaultValue={task?.branchId ?? defaultBranchId ?? ""} />
+      <Label>
+        Ветка
+        <Select name="branchId" required defaultValue={task?.branchId ?? defaultBranchId ?? ""}>
+          <option value="" disabled>
+            Выберите ветку
+          </option>
+          {branches.map((branch) => (
+            <option key={branch.id} value={branch.id}>
+              {branch.title}
+            </option>
+          ))}
+        </Select>
+      </Label>
       <Label>
         Статус
         <Select name="status" required defaultValue={task?.status ?? "planned"}>
