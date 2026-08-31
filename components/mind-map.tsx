@@ -25,22 +25,36 @@ type Side = "left" | "right"
 type BranchLayout = {
   branch: Branch
   children: BranchLayout[]
+  periodTasks: Task[]
   height: number
   nodeHeight: number
   width: number
 }
 
-type MapNode = {
-  id: string
-  branch: Branch
-  tasks: Task[]
-  parentId: string | null
-  depth: number
-  side: Side
-  height: number
-  x: number
-  y: number
-}
+type MapNode =
+  | {
+      id: string
+      kind: "branch"
+      branch: Branch
+      tasks: Task[]
+      parentId: string | null
+      depth: number
+      side: Side
+      height: number
+      x: number
+      y: number
+    }
+  | {
+      id: string
+      kind: "period-task"
+      task: Task
+      parentId: string
+      depth: number
+      side: Side
+      height: number
+      x: number
+      y: number
+    }
 
 type MapEdge = {
   fromId: string | null
@@ -65,35 +79,52 @@ function getBranchMapTasks(branchId: string, data: AppData, showAll: boolean) {
         (task.status === "in_progress" ||
           task.status === "recurring" ||
           task.status === "on_demand" ||
-          task.status === "period" ||
           (showAll && task.status === "paused")),
     )
     .sort((a, b) => a.sort - b.sort || a.title.localeCompare(b.title, "ru"))
 }
 
-function estimateNodeHeight(branch: Branch) {
-  const visibleLength = branch.title.length + (branch.timing ? 12 : 0)
+function getPeriodTasks(branchId: string, data: AppData) {
+  return Object.values(data.tasks)
+    .filter((task) => task.branchId === branchId && task.status === "period")
+    .sort((a, b) => a.sort - b.sort || a.title.localeCompare(b.title, "ru"))
+}
+
+function estimateTextNodeHeight(text: string, extraLength = 0) {
+  const visibleLength = text.length + extraLength
   const lines = Math.max(1, Math.ceil(visibleLength / 13))
   return Math.max(NODE_MIN_HEIGHT, lines * NODE_LINE_HEIGHT + NODE_VERTICAL_PADDING)
 }
 
-function getStackHeight(items: BranchLayout[], gap: number) {
+function estimateBranchNodeHeight(branch: Branch) {
+  return estimateTextNodeHeight(branch.title, branch.timing ? 12 : 0)
+}
+
+function estimateTaskNodeHeight(task: Task) {
+  return estimateTextNodeHeight(task.title)
+}
+
+function getStackHeight(items: Array<{ height: number }>, gap: number) {
   if (!items.length) return 0
   return items.reduce((total, item) => total + item.height, 0) + gap * (items.length - 1)
 }
 
 function buildBranchLayout(branch: Branch, data: AppData, showAll: boolean): BranchLayout {
   const children = getVisibleChildren(data, branch.id, showAll).map((child) => buildBranchLayout(child, data, showAll))
-  const nodeHeight = estimateNodeHeight(branch)
-  const childrenHeight = getStackHeight(children, VERTICAL_GAP)
-  const childrenWidth = children.length ? Math.max(...children.map((child) => child.width)) : 0
+  const periodTasks = getPeriodTasks(branch.id, data)
+  const periodTaskLayouts = periodTasks.map((task) => ({ height: estimateTaskNodeHeight(task), width: NODE_WIDTH }))
+  const childItems = [...children, ...periodTaskLayouts]
+  const nodeHeight = estimateBranchNodeHeight(branch)
+  const childrenHeight = getStackHeight(childItems, VERTICAL_GAP)
+  const childrenWidth = childItems.length ? Math.max(...childItems.map((child) => child.width)) : 0
 
   return {
     branch,
     children,
+    periodTasks,
     height: Math.max(nodeHeight, childrenHeight),
     nodeHeight,
-    width: NODE_WIDTH + (children.length ? HORIZONTAL_GAP + childrenWidth : 0),
+    width: NODE_WIDTH + (childItems.length ? HORIZONTAL_GAP + childrenWidth : 0),
   }
 }
 
@@ -122,6 +153,7 @@ function placeBranchLayout({
 }) {
   nodes.push({
     id: layout.branch.id,
+    kind: "branch",
     branch: layout.branch,
     tasks: getBranchMapTasks(layout.branch.id, data, showAll),
     parentId,
@@ -133,26 +165,54 @@ function placeBranchLayout({
   })
   edges.push({ fromId: parentId, toId: layout.branch.id })
 
-  if (!layout.children.length) return
+  if (!layout.children.length && !layout.periodTasks.length) return
 
-  const childrenHeight = getStackHeight(layout.children, VERTICAL_GAP)
+  const periodTaskLayouts = layout.periodTasks.map((task) => ({
+    kind: "period-task" as const,
+    task,
+    height: estimateTaskNodeHeight(task),
+  }))
+  const childItems = [
+    ...layout.children.map((child) => ({ kind: "branch" as const, layout: child, height: child.height })),
+    ...periodTaskLayouts,
+  ]
+  const childrenHeight = getStackHeight(childItems, VERTICAL_GAP)
   let cursor = y - childrenHeight / 2
 
-  for (const child of layout.children) {
-    const childY = cursor + child.height / 2
-    placeBranchLayout({
-      layout: child,
-      data,
-      depth: depth + 1,
-      edges,
-      nodes,
-      parentId: layout.branch.id,
-      showAll,
-      side,
-      x: x + (side === "right" ? 1 : -1) * (NODE_WIDTH + HORIZONTAL_GAP),
-      y: childY,
-    })
-    cursor += child.height + VERTICAL_GAP
+  for (const item of childItems) {
+    const childY = cursor + item.height / 2
+    const childX = x + (side === "right" ? 1 : -1) * (NODE_WIDTH + HORIZONTAL_GAP)
+
+    if (item.kind === "branch") {
+      placeBranchLayout({
+        layout: item.layout,
+        data,
+        depth: depth + 1,
+        edges,
+        nodes,
+        parentId: layout.branch.id,
+        showAll,
+        side,
+        x: childX,
+        y: childY,
+      })
+    } else {
+      const id = `task:${item.task.id}`
+      nodes.push({
+        id,
+        kind: "period-task",
+        task: item.task,
+        parentId: layout.branch.id,
+        depth: depth + 1,
+        side,
+        height: item.height,
+        x: childX,
+        y: childY,
+      })
+      edges.push({ fromId: layout.branch.id, toId: id })
+    }
+
+    cursor += item.height + VERTICAL_GAP
   }
 }
 
@@ -284,17 +344,21 @@ export function MindMap({ data }: { data: AppData }) {
           </div>
 
           {layout.nodes.map((node) => (
-            <BranchBubble
-              key={node.id}
-              branch={node.branch}
-              tasks={node.tasks}
-              showAll={showAll}
-              depth={node.depth}
-              height={node.height}
-              x={node.x}
-              y={node.y}
-              onTooltipChange={setTooltip}
-            />
+            node.kind === "branch" ? (
+              <BranchBubble
+                key={node.id}
+                branch={node.branch}
+                tasks={node.tasks}
+                showAll={showAll}
+                depth={node.depth}
+                height={node.height}
+                x={node.x}
+                y={node.y}
+                onTooltipChange={setTooltip}
+              />
+            ) : (
+              <PeriodTaskBubble key={node.id} task={node.task} height={node.height} x={node.x} y={node.y} />
+            )
           ))}
         </div>
       </div>
@@ -313,7 +377,6 @@ export function MindMap({ data }: { data: AppData }) {
                     task.status === "in_progress" && "bg-red-500",
                     task.status === "recurring" && "border border-blue-600 bg-transparent",
                     task.status === "on_demand" && "bg-yellow-500",
-                    task.status === "period" && "bg-purple-500",
                     task.status === "paused" && "bg-yellow-500",
                   )}
                   aria-hidden="true"
@@ -354,13 +417,11 @@ function BranchBubble({
       task.status === "in_progress" ||
       task.status === "recurring" ||
       task.status === "on_demand" ||
-      task.status === "period" ||
       (showAll && task.status === "paused"),
   )
   const inProgressCount = tasks.filter((task) => task.status === "in_progress").length
   const recurringCount = tasks.filter((task) => task.status === "recurring").length
   const onDemandCount = tasks.filter((task) => task.status === "on_demand").length
-  const periodCount = tasks.filter((task) => task.status === "period").length
   const pausedCount = showAll ? tasks.filter((task) => task.status === "paused").length : 0
 
   function showTooltip(element: HTMLDivElement) {
@@ -412,17 +473,29 @@ function BranchBubble({
             {onDemandCount}
           </span>
         ) : null}
-        {periodCount ? (
-          <span className="inline-flex min-w-4 items-center justify-center rounded-full bg-purple-600 px-1 text-[10px] font-bold leading-4 text-white">
-            {periodCount}
-          </span>
-        ) : null}
         {pausedCount ? (
           <span className="inline-flex min-w-4 items-center justify-center rounded-full bg-yellow-500 px-1 text-[10px] font-bold leading-4 text-white">
             {pausedCount}
           </span>
         ) : null}
       </Link>
+    </div>
+  )
+}
+
+function PeriodTaskBubble({ task, height, x, y }: { task: Task; height: number; x: number; y: number }) {
+  return (
+    <div
+      className="absolute z-10 -translate-x-1/2 -translate-y-1/2"
+      style={{ left: x, top: y, width: NODE_WIDTH }}
+    >
+      <div
+        style={{ height }}
+        className="flex box-border min-h-8 items-center justify-center rounded-full border border-purple-200 bg-purple-50 px-2 py-1 text-center text-xs font-semibold leading-[16px] text-purple-800 shadow-sm"
+        title="Задача периода"
+      >
+        <span className="min-w-0 break-words">{task.title}</span>
+      </div>
     </div>
   )
 }

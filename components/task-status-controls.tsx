@@ -8,11 +8,9 @@ const quickStatuses: Array<{
   className: string
 }> = [
   { status: "in_progress", label: "В работе", className: "bg-red-600 text-white" },
-  { status: "planned", label: "В плане", className: "bg-slate-200 text-slate-600" },
   { status: "recurring", label: "Повторяющаяся задача", className: "border border-blue-600 bg-transparent text-blue-700" },
   { status: "on_demand", label: "Задача по требованию", className: "bg-yellow-500 text-white" },
   { status: "period", label: "Задача периода", className: "bg-purple-600 text-white" },
-  { status: "done", label: "Выполнено", className: "bg-emerald-500 text-white" },
 ]
 
 export function TaskStatusControls({ task }: { task: Task }) {
