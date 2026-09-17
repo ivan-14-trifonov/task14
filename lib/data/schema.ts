@@ -25,7 +25,6 @@ const calendarSchema = z
       week: calendarReminderSchema,
       three_days: calendarReminderSchema,
       day: calendarReminderSchema,
-      hour: calendarReminderSchema,
     }),
   })
   .nullable()
@@ -91,7 +90,6 @@ export const taskInputSchema = z.object({
   reminderWeek: z.boolean().default(true),
   reminderThreeDays: z.boolean().default(true),
   reminderDay: z.boolean().default(true),
-  reminderHour: z.boolean().default(true),
 }).superRefine((value, ctx) => {
   if (value.status !== "calendar") return
   if (!z.string().datetime().safeParse(value.calendarAt).success) {
@@ -114,7 +112,6 @@ export const taskInputSchema = z.object({
             week: { enabled: value.reminderWeek, sentAt: null },
             three_days: { enabled: value.reminderThreeDays, sentAt: null },
             day: { enabled: value.reminderDay, sentAt: null },
-            hour: { enabled: value.reminderHour, sentAt: null },
           },
         }
       : null,

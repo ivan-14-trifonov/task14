@@ -9,14 +9,12 @@ const REMINDER_OFFSETS: Record<CalendarReminderKey, number> = {
   week: 7 * 24 * 60 * 60 * 1000,
   three_days: 3 * 24 * 60 * 60 * 1000,
   day: 24 * 60 * 60 * 1000,
-  hour: 60 * 60 * 1000,
 }
 
 const REMINDER_LABELS: Record<CalendarReminderKey, string> = {
   week: "за неделю",
   three_days: "за 3 дня",
   day: "за 1 день",
-  hour: "за 1 час",
 }
 const DUE_LOOKAHEAD_MS = 24 * 60 * 60 * 1000
 
