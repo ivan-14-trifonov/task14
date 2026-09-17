@@ -21,7 +21,8 @@ export default async function TasksPage({
     params.status === "recurring" ||
     params.status === "on_demand" ||
     params.status === "period" ||
-    params.status === "calendar"
+    params.status === "calendar" ||
+    params.status === "uncontrolled"
       ? params.status
       : "all"
   const tasks = getFilteredTasks(data, {

@@ -41,6 +41,7 @@ export function TaskCalendarFields({ task }: { task?: Task }) {
           <option value="on_demand">Задача по требованию</option>
           <option value="period">Задача периода</option>
           <option value="calendar">Календарь</option>
+          <option value="uncontrolled">Не контролирую</option>
           <option value="done">Выполнено</option>
         </Select>
       </Label>

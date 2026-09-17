@@ -18,6 +18,7 @@ export function BranchCounts({
   recurring,
   onDemand,
   period,
+  uncontrolled,
   planned,
   tasks = [],
   compact = false,
@@ -26,18 +27,20 @@ export function BranchCounts({
   recurring: number
   onDemand: number
   period: number
+  uncontrolled: number
   planned: number
   tasks?: Task[]
   compact?: boolean
 }) {
   const [tooltipPosition, setTooltipPosition] = useState<TooltipPosition>(null)
-  if (inProgress === 0 && recurring === 0 && onDemand === 0 && period === 0 && planned === 0) return null
+  if (inProgress === 0 && recurring === 0 && onDemand === 0 && period === 0 && uncontrolled === 0 && planned === 0) return null
   const tooltipTasks = tasks.filter(
     (task) =>
       task.status === "in_progress" ||
       task.status === "recurring" ||
       task.status === "on_demand" ||
-      task.status === "period",
+      task.status === "period" ||
+      task.status === "uncontrolled",
   )
 
   function showTooltip(element: HTMLDivElement) {
@@ -98,6 +101,15 @@ export function BranchCounts({
             {period}
           </span>
         ) : null}
+        {uncontrolled ? (
+          <span
+            className="inline-flex items-center gap-0.5 rounded-full bg-red-50 px-1.5 text-[10px] font-bold leading-4 text-red-700 ring-1 ring-red-200"
+            title="Не контролирую"
+          >
+            <span aria-hidden="true">×</span>
+            {uncontrolled}
+          </span>
+        ) : null}
         {planned ? (
           <span
             className="inline-flex min-w-4 items-center justify-center rounded-full bg-slate-200 px-1 text-[10px] font-bold leading-4 text-slate-600"
@@ -117,14 +129,19 @@ export function BranchCounts({
               <li key={task.id} className="flex gap-2">
                 <span
                   className={cn(
-                    "mt-1.5 size-1.5 shrink-0 rounded-full",
+                    "shrink-0",
+                    task.status === "uncontrolled"
+                      ? "mt-0.5 flex size-3 items-center justify-center text-[11px] font-bold leading-none text-red-600"
+                      : "mt-1.5 size-1.5 rounded-full",
                     task.status === "in_progress" && "bg-red-500",
                     task.status === "recurring" && "border border-blue-600 bg-transparent",
                     task.status === "on_demand" && "bg-yellow-500",
                     task.status === "period" && "bg-purple-500",
                   )}
                   aria-hidden="true"
-                />
+                >
+                  {task.status === "uncontrolled" ? "×" : null}
+                </span>
                 <span className="min-w-0 break-words">{task.title}</span>
               </li>
             ))}

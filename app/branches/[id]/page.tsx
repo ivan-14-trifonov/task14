@@ -138,6 +138,7 @@ export default async function BranchPage({
                 recurring={branchCounts.recurring}
                 onDemand={branchCounts.onDemand}
                 period={branchCounts.period}
+                uncontrolled={branchCounts.uncontrolled}
                 planned={branchCounts.planned}
                 tasks={branchCountTasks}
               />
@@ -234,6 +235,7 @@ export default async function BranchPage({
                             recurring={childCounts.recurring}
                             onDemand={childCounts.onDemand}
                             period={childCounts.period}
+                            uncontrolled={childCounts.uncontrolled}
                             planned={childCounts.planned}
                             tasks={childCountTasks}
                           />

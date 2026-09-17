@@ -11,6 +11,7 @@ const quickStatuses: Array<{
   { status: "recurring", label: "Повторяющаяся задача", className: "border border-blue-600 bg-transparent text-blue-700" },
   { status: "on_demand", label: "Задача по требованию", className: "bg-yellow-500 text-white" },
   { status: "period", label: "Задача периода", className: "bg-purple-600 text-white" },
+  { status: "uncontrolled", label: "Не контролирую", className: "bg-red-50 text-red-700 ring-1 ring-red-300" },
 ]
 
 export function TaskStatusControls({ task }: { task: Task }) {

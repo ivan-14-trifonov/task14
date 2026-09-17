@@ -1,5 +1,14 @@
 export type BranchStatus = "in_progress" | "timing" | "paused" | null
-export type TaskStatus = "in_progress" | "planned" | "recurring" | "on_demand" | "period" | "calendar" | "paused" | "done"
+export type TaskStatus =
+  | "in_progress"
+  | "planned"
+  | "recurring"
+  | "on_demand"
+  | "period"
+  | "calendar"
+  | "uncontrolled"
+  | "paused"
+  | "done"
 export type TaskDailyStatus = "worked" | "closed"
 export type CalendarReminderKey = "week" | "three_days" | "day" | "hour"
 
@@ -61,6 +70,7 @@ export type BranchTaskCounts = {
   recurring: number
   onDemand: number
   period: number
+  uncontrolled: number
   planned: number
   done: number
 }

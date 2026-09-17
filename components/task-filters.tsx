@@ -29,6 +29,7 @@ export function TaskFilters({
             <option value={"on_demand" satisfies TaskStatus}>По требованию</option>
             <option value={"period" satisfies TaskStatus}>Задачи периода</option>
             <option value={"calendar" satisfies TaskStatus}>Календарь</option>
+            <option value={"uncontrolled" satisfies TaskStatus}>Не контролирую</option>
           </Select>
         </Label>
       ) : null}

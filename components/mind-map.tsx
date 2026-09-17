@@ -71,16 +71,40 @@ function getVisibleChildren(data: AppData, parentId: string | null, showAll: boo
   return getChildren(data, parentId).filter((branch) => showAll || branch.status !== "paused")
 }
 
+function getNearestVisibleAncestorIdForPausedBranch(branchId: string, data: AppData) {
+  let current: Branch | undefined = data.branches[branchId]
+  let hiddenByPause = false
+
+  while (current) {
+    if (current.status === "paused") hiddenByPause = true
+    const parent: Branch | undefined = current.parentId ? data.branches[current.parentId] : undefined
+    if (hiddenByPause && parent?.status !== "paused") return parent?.id ?? null
+    current = parent
+  }
+
+  return null
+}
+
 function getBranchMapTasks(branchId: string, data: AppData, showAll: boolean) {
-  return Object.values(data.tasks)
-    .filter(
-      (task) =>
-        task.branchId === branchId &&
-        (task.status === "in_progress" ||
-          task.status === "recurring" ||
-          task.status === "on_demand" ||
-          (showAll && task.status === "paused")),
-    )
+  const directTasks = Object.values(data.tasks).filter(
+    (task) =>
+      task.branchId === branchId &&
+      (task.status === "in_progress" ||
+        task.status === "recurring" ||
+        task.status === "on_demand" ||
+        task.status === "uncontrolled" ||
+        (showAll && task.status === "paused")),
+  )
+  const hiddenPausedTasks = showAll
+    ? []
+    : Object.values(data.tasks).filter(
+        (task) =>
+          task.status === "uncontrolled" &&
+          task.branchId !== branchId &&
+          getNearestVisibleAncestorIdForPausedBranch(task.branchId, data) === branchId,
+      )
+
+  return [...directTasks, ...hiddenPausedTasks]
     .sort((a, b) => a.sort - b.sort || a.title.localeCompare(b.title, "ru"))
 }
 
@@ -373,14 +397,19 @@ export function MindMap({ data }: { data: AppData }) {
               <li key={task.id} className="flex gap-2">
                 <span
                   className={cn(
-                    "mt-1.5 size-1.5 shrink-0 rounded-full",
+                    "shrink-0",
+                    task.status === "uncontrolled"
+                      ? "mt-0.5 flex size-3 items-center justify-center text-[11px] font-bold leading-none text-red-600"
+                      : "mt-1.5 size-1.5 rounded-full",
                     task.status === "in_progress" && "bg-red-500",
                     task.status === "recurring" && "border border-blue-600 bg-transparent",
                     task.status === "on_demand" && "bg-yellow-500",
                     task.status === "paused" && "bg-yellow-500",
                   )}
                   aria-hidden="true"
-                />
+                >
+                  {task.status === "uncontrolled" ? "×" : null}
+                </span>
                 <span className="min-w-0 break-words">
                   {task.title}
                 </span>
@@ -417,9 +446,11 @@ function BranchBubble({
       task.status === "in_progress" ||
       task.status === "recurring" ||
       task.status === "on_demand" ||
+      task.status === "uncontrolled" ||
       (showAll && task.status === "paused"),
   )
   const inProgressCount = tasks.filter((task) => task.status === "in_progress").length
+  const uncontrolledCount = tasks.filter((task) => task.status === "uncontrolled").length
   const recurringCount = tasks.filter((task) => task.status === "recurring").length
   const onDemandCount = tasks.filter((task) => task.status === "on_demand").length
   const pausedCount = showAll ? tasks.filter((task) => task.status === "paused").length : 0
@@ -458,6 +489,15 @@ function BranchBubble({
         {inProgressCount ? (
           <span className="inline-flex min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold leading-4 text-white">
             {inProgressCount}
+          </span>
+        ) : null}
+        {uncontrolledCount ? (
+          <span
+            className="inline-flex items-center gap-0.5 rounded-full bg-red-50 px-1.5 text-[10px] font-bold leading-4 text-red-700 ring-1 ring-red-200"
+            title="Не контролирую"
+          >
+            <span aria-hidden="true">×</span>
+            {uncontrolledCount}
           </span>
         ) : null}
         {recurringCount ? (
