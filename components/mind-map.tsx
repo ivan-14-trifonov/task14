@@ -10,10 +10,11 @@ import { Card } from "@/components/ui"
 import { cn, formatDate } from "@/lib/utils"
 import type { AppData, Branch, Task } from "@/types"
 
-const NODE_WIDTH = 160
+const NODE_WIDTH = 220
 const NODE_MIN_HEIGHT = 34
 const NODE_LINE_HEIGHT = 16
 const NODE_VERTICAL_PADDING = 8
+const NODE_TEXT_CHARS_PER_LINE = 20
 const HORIZONTAL_GAP = 36
 const VERTICAL_GAP = 10
 const ROOT_GAP = 16
@@ -117,7 +118,7 @@ function getPeriodTasks(branchId: string, data: AppData) {
 
 function estimateTextNodeHeight(text: string, extraLength = 0) {
   const visibleLength = text.length + extraLength
-  const lines = Math.max(1, Math.ceil(visibleLength / 13))
+  const lines = Math.max(1, Math.ceil(visibleLength / NODE_TEXT_CHARS_PER_LINE))
   return Math.max(NODE_MIN_HEIGHT, lines * NODE_LINE_HEIGHT + NODE_VERTICAL_PADDING)
 }
 
@@ -432,10 +433,7 @@ export function MindMap({ data }: { data: AppData }) {
                   {task.status === "uncontrolled" ? "×" : null}
                 </span>
                 <span className="min-w-0 break-words">
-                  {task.title}
-                  {task.status === "calendar" && task.calendar ? (
-                    <span className="block text-[11px] text-cyan-700">{formatDate(task.calendar.at)}</span>
-                  ) : null}
+                  {task.status === "calendar" && task.calendar ? `${formatDate(task.calendar.at)} — ${task.title}` : task.title}
                 </span>
               </li>
             ))}
@@ -513,11 +511,11 @@ function BranchBubble({
           branch.status === "paused" && "text-muted-foreground line-through",
         )}
       >
-        <BranchTitle branch={branch} className="min-w-0 break-words" />
+        <BranchTitle branch={branch} className="min-w-0 flex-1 break-words" />
         <BranchTimingBadge branch={branch} compact />
         <BranchStatusDot status={branch.status} />
         <span
-          className="inline-flex flex-wrap items-center justify-center gap-1"
+          className="inline-flex shrink-0 flex-wrap items-center justify-center gap-1"
           onClick={(event) => {
             event.preventDefault()
             event.stopPropagation()

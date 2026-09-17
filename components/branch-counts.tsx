@@ -211,10 +211,7 @@ export function BranchCounts({
                   {task.status === "uncontrolled" ? "×" : null}
                 </span>
                 <span className="min-w-0 break-words">
-                  {task.title}
-                  {task.status === "calendar" && task.calendar ? (
-                    <span className="block text-[11px] text-cyan-700">{formatDate(task.calendar.at)}</span>
-                  ) : null}
+                  {task.status === "calendar" && task.calendar ? `${formatDate(task.calendar.at)} — ${task.title}` : task.title}
                 </span>
               </li>
             ))}
