@@ -18,7 +18,7 @@ const REMINDER_LABELS: Record<CalendarReminderKey, string> = {
   day: "за 1 день",
   hour: "за 1 час",
 }
-const DUE_WINDOW_MS = 30 * 60 * 1000
+const DUE_LOOKAHEAD_MS = 24 * 60 * 60 * 1000
 
 function isAuthorized(request: Request) {
   const secret = process.env.CRON_SECRET
@@ -43,7 +43,7 @@ function getDueReminderKeys(task: Task, now: number) {
     const reminder = task.calendar?.reminders[key]
     if (!reminder?.enabled || reminder.sentAt) return false
     const dueAt = eventTime - REMINDER_OFFSETS[key]
-    return now >= dueAt && now < dueAt + DUE_WINDOW_MS
+    return dueAt >= now && dueAt < now + DUE_LOOKAHEAD_MS
   })
 }
 

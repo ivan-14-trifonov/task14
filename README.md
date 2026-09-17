@@ -153,7 +153,7 @@ TELEGRAM_BOT_TOKEN=токен_бота
 TELEGRAM_CHAT_ID=id_чата
 ```
 
-`CRON_SECRET` защищает endpoint `/api/reminders/telegram`. Vercel Cron вызывает его по расписанию из `vercel.json`.
+`CRON_SECRET` защищает endpoint `/api/reminders/telegram`. Vercel Cron вызывает его один раз в день по расписанию из `vercel.json`.
 
 ## Деплой на Vercel через GitHub
 
