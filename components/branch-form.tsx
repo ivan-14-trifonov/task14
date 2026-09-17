@@ -1,6 +1,7 @@
 import { Save } from "lucide-react"
 import { createBranchAction, updateBranchAction } from "@/lib/data/actions"
 import { getTodayKey } from "@/lib/data/daily"
+import { AutoCloseForm } from "@/components/auto-close-form"
 import { BranchLevelSelect } from "@/components/branch-level-select"
 import { BranchStatusFields } from "@/components/branch-status-fields"
 import { Button, Input, Label } from "@/components/ui"
@@ -22,7 +23,7 @@ export function BranchForm({
   const timingDailyMinutes = branch?.timing?.dailyMinutes ?? 30
 
   return (
-    <form action={action} className="grid gap-4">
+    <AutoCloseForm action={action} className="grid gap-4">
       {branch ? <input type="hidden" name="id" value={branch.id} /> : null}
       <input type="hidden" name="openAfterCreate" value={String(openAfterCreate)} />
       <Label>
@@ -47,6 +48,6 @@ export function BranchForm({
         <Save className="size-4" />
         Сохранить
       </Button>
-    </form>
+    </AutoCloseForm>
   )
 }

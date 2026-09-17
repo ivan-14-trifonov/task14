@@ -1,5 +1,6 @@
 import { Save } from "lucide-react"
 import { createTaskAction, updateTaskAction } from "@/lib/data/actions"
+import { AutoCloseForm } from "@/components/auto-close-form"
 import { BranchLevelSelect } from "@/components/branch-level-select"
 import { Button, Input, Label, Select, Textarea } from "@/components/ui"
 import type { AppData, Task } from "@/types"
@@ -16,7 +17,7 @@ export function TaskForm({
   const action = task ? updateTaskAction : createTaskAction
 
   return (
-    <form action={action} className="grid gap-4">
+    <AutoCloseForm action={action} className="grid gap-4">
       {task ? <input type="hidden" name="id" value={task.id} /> : null}
       <Label>
         Название
@@ -43,6 +44,6 @@ export function TaskForm({
         <Save className="size-4" />
         Сохранить
       </Button>
-    </form>
+    </AutoCloseForm>
   )
 }
