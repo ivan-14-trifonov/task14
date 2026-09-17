@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { cn } from "@/lib/utils"
 import type { Task } from "@/types"
 
@@ -32,8 +32,8 @@ export function BranchCounts({
   tasks?: Task[]
   compact?: boolean
 }) {
+  const rootRef = useRef<HTMLDivElement>(null)
   const [tooltipPosition, setTooltipPosition] = useState<TooltipPosition>(null)
-  if (inProgress === 0 && recurring === 0 && onDemand === 0 && period === 0 && uncontrolled === 0 && planned === 0) return null
   const tooltipTasks = tasks.filter(
     (task) =>
       task.status === "in_progress" ||
@@ -60,14 +60,58 @@ export function BranchCounts({
     })
   }
 
+  function toggleTooltip(element: HTMLDivElement) {
+    if (!tooltipTasks.length) return
+    if (tooltipPosition) {
+      setTooltipPosition(null)
+      return
+    }
+    showTooltip(element)
+  }
+
+  useEffect(() => {
+    if (!tooltipPosition) return
+
+    function closeOnOutsidePointer(event: PointerEvent) {
+      if (rootRef.current?.contains(event.target as Node)) return
+      setTooltipPosition(null)
+    }
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setTooltipPosition(null)
+    }
+
+    document.addEventListener("pointerdown", closeOnOutsidePointer)
+    document.addEventListener("keydown", closeOnEscape)
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsidePointer)
+      document.removeEventListener("keydown", closeOnEscape)
+    }
+  }, [tooltipPosition])
+
+  if (inProgress === 0 && recurring === 0 && onDemand === 0 && period === 0 && uncontrolled === 0 && planned === 0) return null
+
   return (
     <>
       <div
+        ref={rootRef}
         className={cn("flex w-fit flex-wrap items-center gap-1", compact && "mt-0.5")}
         onMouseEnter={(event) => showTooltip(event.currentTarget)}
         onMouseLeave={() => setTooltipPosition(null)}
         onFocus={(event) => showTooltip(event.currentTarget)}
         onBlur={() => setTooltipPosition(null)}
+        onClick={(event) => {
+          event.preventDefault()
+          event.stopPropagation()
+          toggleTooltip(event.currentTarget)
+        }}
+        role={tooltipTasks.length ? "button" : undefined}
+        tabIndex={tooltipTasks.length ? 0 : undefined}
+        onKeyDown={(event) => {
+          if (event.key !== "Enter" && event.key !== " ") return
+          event.preventDefault()
+          toggleTooltip(event.currentTarget)
+        }}
       >
         {inProgress ? (
           <span

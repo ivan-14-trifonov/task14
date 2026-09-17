@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { getChildren } from "@/lib/data/tree"
 import { BranchTimingBadge } from "@/components/branch-timing-badge"
 import { BranchTitle } from "@/components/branch-title"
@@ -313,6 +313,25 @@ export function MindMap({ data }: { data: AppData }) {
   const [tooltip, setTooltip] = useState<TooltipState>(null)
   const roots = getChildren(data, null)
 
+  useEffect(() => {
+    if (!tooltip) return
+
+    function closeOnOutsidePointer() {
+      setTooltip(null)
+    }
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setTooltip(null)
+    }
+
+    document.addEventListener("pointerdown", closeOnOutsidePointer)
+    document.addEventListener("keydown", closeOnEscape)
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsidePointer)
+      document.removeEventListener("keydown", closeOnEscape)
+    }
+  }, [tooltip])
+
   if (!roots.length) {
     return <Card className="p-6 text-sm text-muted-foreground">Дерево пустое. Создайте первое направление.</Card>
   }
@@ -455,7 +474,7 @@ function BranchBubble({
   const onDemandCount = tasks.filter((task) => task.status === "on_demand").length
   const pausedCount = showAll ? tasks.filter((task) => task.status === "paused").length : 0
 
-  function showTooltip(element: HTMLDivElement) {
+  function showTooltip(element: HTMLElement) {
     if (!visibleTasks.length) return
     const rect = element.getBoundingClientRect()
     onTooltipChange({
@@ -486,38 +505,48 @@ function BranchBubble({
         <BranchTitle branch={branch} className="min-w-0 break-words" />
         <BranchTimingBadge branch={branch} compact />
         <BranchStatusDot status={branch.status} />
-        {inProgressCount ? (
-          <span className="inline-flex min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold leading-4 text-white">
-            {inProgressCount}
-          </span>
-        ) : null}
-        {uncontrolledCount ? (
-          <span
-            className="inline-flex items-center gap-0.5 rounded-full bg-red-50 px-1.5 text-[10px] font-bold leading-4 text-red-700 ring-1 ring-red-200"
-            title="Не контролирую"
-          >
-            <span aria-hidden="true">×</span>
-            {uncontrolledCount}
-          </span>
-        ) : null}
-        {recurringCount ? (
-          <span
-            className="inline-flex box-border min-w-4 items-center justify-center rounded-full border border-blue-600 bg-transparent px-[3px] text-[10px] font-bold leading-[14px] text-blue-700"
-            title="Повторяющиеся задачи"
-          >
-            {recurringCount}
-          </span>
-        ) : null}
-        {onDemandCount ? (
-          <span className="inline-flex min-w-4 items-center justify-center rounded-full bg-yellow-500 px-1 text-[10px] font-bold leading-4 text-white">
-            {onDemandCount}
-          </span>
-        ) : null}
-        {pausedCount ? (
-          <span className="inline-flex min-w-4 items-center justify-center rounded-full bg-yellow-500 px-1 text-[10px] font-bold leading-4 text-white">
-            {pausedCount}
-          </span>
-        ) : null}
+        <span
+          className="inline-flex flex-wrap items-center justify-center gap-1"
+          onClick={(event) => {
+            event.preventDefault()
+            event.stopPropagation()
+            showTooltip(event.currentTarget)
+          }}
+          onPointerDown={(event) => event.stopPropagation()}
+        >
+          {inProgressCount ? (
+            <span className="inline-flex min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold leading-4 text-white">
+              {inProgressCount}
+            </span>
+          ) : null}
+          {uncontrolledCount ? (
+            <span
+              className="inline-flex items-center gap-0.5 rounded-full bg-red-50 px-1.5 text-[10px] font-bold leading-4 text-red-700 ring-1 ring-red-200"
+              title="Не контролирую"
+            >
+              <span aria-hidden="true">×</span>
+              {uncontrolledCount}
+            </span>
+          ) : null}
+          {recurringCount ? (
+            <span
+              className="inline-flex box-border min-w-4 items-center justify-center rounded-full border border-blue-600 bg-transparent px-[3px] text-[10px] font-bold leading-[14px] text-blue-700"
+              title="Повторяющиеся задачи"
+            >
+              {recurringCount}
+            </span>
+          ) : null}
+          {onDemandCount ? (
+            <span className="inline-flex min-w-4 items-center justify-center rounded-full bg-yellow-500 px-1 text-[10px] font-bold leading-4 text-white">
+              {onDemandCount}
+            </span>
+          ) : null}
+          {pausedCount ? (
+            <span className="inline-flex min-w-4 items-center justify-center rounded-full bg-yellow-500 px-1 text-[10px] font-bold leading-4 text-white">
+              {pausedCount}
+            </span>
+          ) : null}
+        </span>
       </Link>
     </div>
   )
