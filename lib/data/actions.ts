@@ -34,6 +34,7 @@ function branchInputFromForm(formData: FormData) {
   return {
     title: getString(formData, "title"),
     tag: getString(formData, "tag"),
+    regulation: getString(formData, "regulation"),
     parentId: getNullableString(formData, "parentId"),
     status: getNullableString(formData, "status"),
     timingStartDate: getString(formData, "timingStartDate"),

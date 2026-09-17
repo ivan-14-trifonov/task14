@@ -13,11 +13,11 @@ export function AppShell({ children, session }: { children: React.ReactNode; ses
             <p className="text-sm text-muted-foreground">{session.user?.email}</p>
           </div>
           <nav className="flex flex-wrap items-center gap-2">
-            <LinkButton href="/" variant="ghost">
+            <LinkButton href="/?view=tree" variant="ghost">
               <FolderTree className="size-4" />
               Дерево
             </LinkButton>
-            <LinkButton href="/?view=mind-map" variant="ghost">
+            <LinkButton href="/" variant="ghost">
               <Network className="size-4" />
               Ментальная карта
             </LinkButton>

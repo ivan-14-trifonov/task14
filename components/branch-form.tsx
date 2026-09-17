@@ -4,7 +4,7 @@ import { getTodayKey } from "@/lib/data/daily"
 import { AutoCloseForm } from "@/components/auto-close-form"
 import { BranchLevelSelect } from "@/components/branch-level-select"
 import { BranchStatusFields } from "@/components/branch-status-fields"
-import { Button, Input, Label } from "@/components/ui"
+import { Button, Input, Label, Textarea } from "@/components/ui"
 import type { AppData, Branch } from "@/types"
 
 export function BranchForm({
@@ -33,6 +33,14 @@ export function BranchForm({
       <Label>
         Короткий тег
         <Input name="tag" maxLength={24} defaultValue={branch?.tag ?? ""} placeholder="Например: MVP" />
+      </Label>
+      <Label>
+        Регламент
+        <Textarea
+          name="regulation"
+          defaultValue={branch?.regulation ?? ""}
+          placeholder="Правила, порядок работы, критерии или заметки по направлению"
+        />
       </Label>
       <BranchLevelSelect
         data={data}

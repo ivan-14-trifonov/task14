@@ -24,6 +24,7 @@ export const branchSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1),
   tag: z.string().max(24).optional().default(""),
+  regulation: z.string().optional().default(""),
   parentId: z.string().min(1).nullable(),
   status: branchStatusSchema,
   timing: z
@@ -112,6 +113,7 @@ export const taskInputSchema = z.object({
 export const branchInputSchema = z.object({
   title: z.string().trim().min(1, "Укажите название"),
   tag: z.string().trim().max(24, "Тег должен быть короче 24 символов").default(""),
+  regulation: z.string().trim().default(""),
   parentId: z.string().nullable(),
   status: branchStatusSchema,
   timingStartDate: z.string().trim().default(""),
@@ -135,6 +137,7 @@ export const branchInputSchema = z.object({
 }).transform((value) => ({
   title: value.title,
   tag: value.tag,
+  regulation: value.regulation,
   parentId: value.parentId,
   status: value.status,
   timing:

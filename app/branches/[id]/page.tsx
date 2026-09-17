@@ -202,6 +202,13 @@ export default async function BranchPage({
           <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{query.error}</div>
         ) : null}
 
+        {branch.regulation ? (
+          <Card className="p-4">
+            <h2 className="text-lg font-semibold">Регламент</h2>
+            <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">{branch.regulation}</p>
+          </Card>
+        ) : null}
+
         <BranchTimingForm branch={branch} />
 
         <div className="grid gap-3">

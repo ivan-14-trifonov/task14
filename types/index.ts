@@ -7,6 +7,7 @@ export type Branch = {
   id: string
   title: string
   tag: string
+  regulation: string
   parentId: string | null
   status: BranchStatus
   timing: {

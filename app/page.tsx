@@ -11,7 +11,7 @@ export default async function HomePage({
   const session = await requireAdmin()
   const query = await searchParams
   const data = await getDataForPage()
-  const view = query.view === "mind-map" ? "mind-map" : "tree"
+  const view = query.view === "tree" ? "tree" : "mind-map"
 
   return (
     <AppShell session={session}>
