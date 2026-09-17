@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { cn } from "@/lib/utils"
+import { cn, formatDate } from "@/lib/utils"
 import type { Task } from "@/types"
 
 const TOOLTIP_WIDTH = 256
@@ -18,6 +18,7 @@ export function BranchCounts({
   recurring,
   onDemand,
   period,
+  calendar,
   uncontrolled,
   planned,
   tasks = [],
@@ -27,6 +28,7 @@ export function BranchCounts({
   recurring: number
   onDemand: number
   period: number
+  calendar: number
   uncontrolled: number
   planned: number
   tasks?: Task[]
@@ -40,6 +42,7 @@ export function BranchCounts({
       task.status === "recurring" ||
       task.status === "on_demand" ||
       task.status === "period" ||
+      task.status === "calendar" ||
       task.status === "uncontrolled",
   )
 
@@ -89,15 +92,27 @@ export function BranchCounts({
     }
   }, [tooltipPosition])
 
-  if (inProgress === 0 && recurring === 0 && onDemand === 0 && period === 0 && uncontrolled === 0 && planned === 0) return null
+  if (
+    inProgress === 0 &&
+    recurring === 0 &&
+    onDemand === 0 &&
+    period === 0 &&
+    calendar === 0 &&
+    uncontrolled === 0 &&
+    planned === 0
+  ) return null
 
   return (
     <>
       <div
         ref={rootRef}
         className={cn("flex w-fit flex-wrap items-center gap-1", compact && "mt-0.5")}
-        onMouseEnter={(event) => showTooltip(event.currentTarget)}
-        onMouseLeave={() => setTooltipPosition(null)}
+        onPointerEnter={(event) => {
+          if (event.pointerType === "mouse") showTooltip(event.currentTarget)
+        }}
+        onPointerLeave={(event) => {
+          if (event.pointerType === "mouse") setTooltipPosition(null)
+        }}
         onFocus={(event) => showTooltip(event.currentTarget)}
         onBlur={() => setTooltipPosition(null)}
         onClick={(event) => {
@@ -145,6 +160,14 @@ export function BranchCounts({
             {period}
           </span>
         ) : null}
+        {calendar ? (
+          <span
+            className="inline-flex min-w-4 items-center justify-center rounded-full bg-cyan-500 px-1 text-[10px] font-bold leading-4 text-white"
+            title="Календарь"
+          >
+            {calendar}
+          </span>
+        ) : null}
         {uncontrolled ? (
           <span
             className="inline-flex items-center gap-0.5 rounded-full bg-red-50 px-1.5 text-[10px] font-bold leading-4 text-red-700 ring-1 ring-red-200"
@@ -181,12 +204,18 @@ export function BranchCounts({
                     task.status === "recurring" && "border border-blue-600 bg-transparent",
                     task.status === "on_demand" && "bg-yellow-500",
                     task.status === "period" && "bg-purple-500",
+                    task.status === "calendar" && "bg-cyan-500",
                   )}
                   aria-hidden="true"
                 >
                   {task.status === "uncontrolled" ? "×" : null}
                 </span>
-                <span className="min-w-0 break-words">{task.title}</span>
+                <span className="min-w-0 break-words">
+                  {task.title}
+                  {task.status === "calendar" && task.calendar ? (
+                    <span className="block text-[11px] text-cyan-700">{formatDate(task.calendar.at)}</span>
+                  ) : null}
+                </span>
               </li>
             ))}
           </ul>

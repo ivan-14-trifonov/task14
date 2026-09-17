@@ -7,7 +7,7 @@ import { BranchTimingBadge } from "@/components/branch-timing-badge"
 import { BranchTitle } from "@/components/branch-title"
 import { BranchStatusDot } from "@/components/status-badge"
 import { Card } from "@/components/ui"
-import { cn } from "@/lib/utils"
+import { cn, formatDate } from "@/lib/utils"
 import type { AppData, Branch, Task } from "@/types"
 
 const NODE_WIDTH = 160
@@ -92,6 +92,7 @@ function getBranchMapTasks(branchId: string, data: AppData, showAll: boolean) {
       (task.status === "in_progress" ||
         task.status === "recurring" ||
         task.status === "on_demand" ||
+        task.status === "calendar" ||
         task.status === "uncontrolled" ||
         (showAll && task.status === "paused")),
   )
@@ -423,6 +424,7 @@ export function MindMap({ data }: { data: AppData }) {
                     task.status === "in_progress" && "bg-red-500",
                     task.status === "recurring" && "border border-blue-600 bg-transparent",
                     task.status === "on_demand" && "bg-yellow-500",
+                    task.status === "calendar" && "bg-cyan-500",
                     task.status === "paused" && "bg-yellow-500",
                   )}
                   aria-hidden="true"
@@ -431,6 +433,9 @@ export function MindMap({ data }: { data: AppData }) {
                 </span>
                 <span className="min-w-0 break-words">
                   {task.title}
+                  {task.status === "calendar" && task.calendar ? (
+                    <span className="block text-[11px] text-cyan-700">{formatDate(task.calendar.at)}</span>
+                  ) : null}
                 </span>
               </li>
             ))}
@@ -465,6 +470,7 @@ function BranchBubble({
       task.status === "in_progress" ||
       task.status === "recurring" ||
       task.status === "on_demand" ||
+      task.status === "calendar" ||
       task.status === "uncontrolled" ||
       (showAll && task.status === "paused"),
   )
@@ -472,6 +478,7 @@ function BranchBubble({
   const uncontrolledCount = tasks.filter((task) => task.status === "uncontrolled").length
   const recurringCount = tasks.filter((task) => task.status === "recurring").length
   const onDemandCount = tasks.filter((task) => task.status === "on_demand").length
+  const calendarCount = tasks.filter((task) => task.status === "calendar").length
   const pausedCount = showAll ? tasks.filter((task) => task.status === "paused").length : 0
 
   function showTooltip(element: HTMLElement) {
@@ -488,8 +495,12 @@ function BranchBubble({
     <div
       className="group absolute z-10 -translate-x-1/2 -translate-y-1/2 hover:z-[9998]"
       style={{ left: x, top: y, width: NODE_WIDTH }}
-      onMouseEnter={(event) => showTooltip(event.currentTarget)}
-      onMouseLeave={() => onTooltipChange(null)}
+      onPointerEnter={(event) => {
+        if (event.pointerType === "mouse") showTooltip(event.currentTarget)
+      }}
+      onPointerLeave={(event) => {
+        if (event.pointerType === "mouse") onTooltipChange(null)
+      }}
       onFocus={(event) => showTooltip(event.currentTarget)}
       onBlur={() => onTooltipChange(null)}
     >
@@ -539,6 +550,14 @@ function BranchBubble({
           {onDemandCount ? (
             <span className="inline-flex min-w-4 items-center justify-center rounded-full bg-yellow-500 px-1 text-[10px] font-bold leading-4 text-white">
               {onDemandCount}
+            </span>
+          ) : null}
+          {calendarCount ? (
+            <span
+              className="inline-flex min-w-4 items-center justify-center rounded-full bg-cyan-500 px-1 text-[10px] font-bold leading-4 text-white"
+              title="Календарь"
+            >
+              {calendarCount}
             </span>
           ) : null}
           {pausedCount ? (

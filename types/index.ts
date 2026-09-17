@@ -70,6 +70,7 @@ export type BranchTaskCounts = {
   recurring: number
   onDemand: number
   period: number
+  calendar: number
   uncontrolled: number
   planned: number
   done: number
