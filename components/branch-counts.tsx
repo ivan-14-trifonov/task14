@@ -18,6 +18,7 @@ export function BranchCounts({
   recurring,
   onDemand,
   period,
+  today,
   calendar,
   uncontrolled,
   planned,
@@ -28,6 +29,7 @@ export function BranchCounts({
   recurring: number
   onDemand: number
   period: number
+  today: number
   calendar: number
   uncontrolled: number
   planned: number
@@ -42,6 +44,7 @@ export function BranchCounts({
       task.status === "recurring" ||
       task.status === "on_demand" ||
       task.status === "period" ||
+      task.status === "today" ||
       task.status === "calendar" ||
       task.status === "uncontrolled",
   )
@@ -97,6 +100,7 @@ export function BranchCounts({
     recurring === 0 &&
     onDemand === 0 &&
     period === 0 &&
+    today === 0 &&
     calendar === 0 &&
     uncontrolled === 0 &&
     planned === 0
@@ -160,6 +164,14 @@ export function BranchCounts({
             {period}
           </span>
         ) : null}
+        {today ? (
+          <span
+            className="inline-flex min-w-4 items-center justify-center rounded-full bg-emerald-500 px-1 text-[10px] font-bold leading-4 text-white"
+            title="Сегодня"
+          >
+            {today}
+          </span>
+        ) : null}
         {calendar ? (
           <span
             className="inline-flex min-w-4 items-center justify-center rounded-full bg-cyan-500 px-1 text-[10px] font-bold leading-4 text-white"
@@ -204,6 +216,7 @@ export function BranchCounts({
                     task.status === "recurring" && "border border-blue-600 bg-transparent",
                     task.status === "on_demand" && "bg-yellow-500",
                     task.status === "period" && "bg-purple-500",
+                    task.status === "today" && "bg-emerald-500",
                     task.status === "calendar" && "bg-cyan-500",
                   )}
                   aria-hidden="true"

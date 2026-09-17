@@ -21,6 +21,7 @@ export default async function TasksPage({
     params.status === "recurring" ||
     params.status === "on_demand" ||
     params.status === "period" ||
+    params.status === "today" ||
     params.status === "calendar" ||
     params.status === "uncontrolled"
       ? params.status

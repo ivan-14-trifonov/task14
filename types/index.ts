@@ -5,6 +5,7 @@ export type TaskStatus =
   | "recurring"
   | "on_demand"
   | "period"
+  | "today"
   | "calendar"
   | "uncontrolled"
   | "paused"
@@ -70,6 +71,7 @@ export type BranchTaskCounts = {
   recurring: number
   onDemand: number
   period: number
+  today: number
   calendar: number
   uncontrolled: number
   planned: number

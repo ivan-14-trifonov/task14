@@ -37,6 +37,7 @@ export function BranchCard({ branch, data }: { branch: Branch; data: AppData }) 
               recurring={counts.recurring}
               onDemand={counts.onDemand}
               period={counts.period}
+              today={counts.today}
               calendar={counts.calendar}
               uncontrolled={counts.uncontrolled}
               planned={counts.planned}
@@ -92,6 +93,7 @@ function BranchTreeNode({ branch, data }: { branch: Branch; data: AppData }) {
             recurring={counts.recurring}
             onDemand={counts.onDemand}
             period={counts.period}
+            today={counts.today}
             calendar={counts.calendar}
             uncontrolled={counts.uncontrolled}
             planned={counts.planned}

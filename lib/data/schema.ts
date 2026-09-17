@@ -7,6 +7,7 @@ export const taskStatusSchema = z.enum([
   "recurring",
   "on_demand",
   "period",
+  "today",
   "calendar",
   "uncontrolled",
   "paused",
