@@ -1,9 +1,24 @@
 import { z } from "zod"
 
 export const branchStatusSchema = z.union([z.literal("in_progress"), z.literal("timing"), z.literal("paused"), z.null()])
-export const taskStatusSchema = z.enum(["in_progress", "planned", "recurring", "on_demand", "period", "paused", "done"])
+export const taskStatusSchema = z.enum(["in_progress", "planned", "recurring", "on_demand", "period", "calendar", "paused", "done"])
 export const taskDailyStatusSchema = z.enum(["worked", "closed"])
 const dateKeySchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
+const calendarReminderSchema = z.object({
+  enabled: z.boolean(),
+  sentAt: z.string().datetime().nullable(),
+})
+const calendarSchema = z
+  .object({
+    at: z.string().datetime(),
+    reminders: z.object({
+      week: calendarReminderSchema,
+      three_days: calendarReminderSchema,
+      day: calendarReminderSchema,
+      hour: calendarReminderSchema,
+    }),
+  })
+  .nullable()
 
 export const branchSchema = z.object({
   id: z.string().min(1),
@@ -43,6 +58,7 @@ export const taskSchema = z.object({
     .nullable()
     .optional()
     .default(null),
+  calendar: calendarSchema.optional().default(null),
 })
 
 export const appDataSchema = z.object({
@@ -60,7 +76,38 @@ export const taskInputSchema = z.object({
   description: z.string().trim().default(""),
   branchId: z.string().min(1, "Выберите ветку"),
   status: taskStatusSchema,
-})
+  calendarAt: z.string().trim().default(""),
+  reminderWeek: z.boolean().default(true),
+  reminderThreeDays: z.boolean().default(true),
+  reminderDay: z.boolean().default(true),
+  reminderHour: z.boolean().default(true),
+}).superRefine((value, ctx) => {
+  if (value.status !== "calendar") return
+  if (!z.string().datetime().safeParse(value.calendarAt).success) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["calendarAt"],
+      message: "Укажите дату и время",
+    })
+  }
+}).transform((value) => ({
+  title: value.title,
+  description: value.description,
+  branchId: value.branchId,
+  status: value.status,
+  calendar:
+    value.status === "calendar"
+      ? {
+          at: value.calendarAt,
+          reminders: {
+            week: { enabled: value.reminderWeek, sentAt: null },
+            three_days: { enabled: value.reminderThreeDays, sentAt: null },
+            day: { enabled: value.reminderDay, sentAt: null },
+            hour: { enabled: value.reminderHour, sentAt: null },
+          },
+        }
+      : null,
+}))
 
 export const branchInputSchema = z.object({
   title: z.string().trim().min(1, "Укажите название"),

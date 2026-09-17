@@ -1,6 +1,7 @@
 export type BranchStatus = "in_progress" | "timing" | "paused" | null
-export type TaskStatus = "in_progress" | "planned" | "recurring" | "on_demand" | "period" | "paused" | "done"
+export type TaskStatus = "in_progress" | "planned" | "recurring" | "on_demand" | "period" | "calendar" | "paused" | "done"
 export type TaskDailyStatus = "worked" | "closed"
+export type CalendarReminderKey = "week" | "three_days" | "day" | "hour"
 
 export type Branch = {
   id: string
@@ -31,6 +32,16 @@ export type Task = {
   dailyStatus: {
     date: string
     status: TaskDailyStatus
+  } | null
+  calendar: {
+    at: string
+    reminders: Record<
+      CalendarReminderKey,
+      {
+        enabled: boolean
+        sentAt: string | null
+      }
+    >
   } | null
 }
 

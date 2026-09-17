@@ -36,6 +36,9 @@ ADMIN_EMAILS=
 BLOB_READ_WRITE_TOKEN=
 BLOB_STORE_ID=
 NEXTAUTH_URL=
+CRON_SECRET=
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_CHAT_ID=
 ```
 
 ### AUTH_SECRET
@@ -137,6 +140,20 @@ NEXTAUTH_URL=https://YOUR-VERCEL-DOMAIN.vercel.app
 ```txt
 NEXTAUTH_URL=https://YOUR-DOMAIN.com
 ```
+
+### Telegram-напоминания
+
+Для задач со статусом `Календарь` приложение отправляет напоминания через Telegram.
+
+Нужны переменные:
+
+```txt
+CRON_SECRET=случайная_строка
+TELEGRAM_BOT_TOKEN=токен_бота
+TELEGRAM_CHAT_ID=id_чата
+```
+
+`CRON_SECRET` защищает endpoint `/api/reminders/telegram`. Vercel Cron вызывает его по расписанию из `vercel.json`.
 
 ## Деплой на Vercel через GitHub
 

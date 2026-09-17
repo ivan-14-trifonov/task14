@@ -7,6 +7,7 @@ const taskLabels: Record<TaskStatus, string> = {
   recurring: "Повторяющаяся",
   on_demand: "По требованию",
   period: "Задача периода",
+  calendar: "Календарь",
   paused: "На паузе",
   done: "Выполнено",
 }
@@ -21,6 +22,7 @@ export function StatusBadge({ status }: { status: TaskStatus }) {
         status === "recurring" && "bg-white text-blue-700 ring-1 ring-blue-300",
         status === "on_demand" && "bg-yellow-50 text-yellow-700 ring-1 ring-yellow-200",
         status === "period" && "bg-purple-50 text-purple-700 ring-1 ring-purple-200",
+        status === "calendar" && "bg-cyan-50 text-cyan-700 ring-1 ring-cyan-200",
         status === "paused" && "bg-yellow-50 text-yellow-700 ring-1 ring-yellow-200",
         status === "done" && "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
       )}

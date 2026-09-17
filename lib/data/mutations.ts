@@ -36,6 +36,19 @@ function isBranchPaused(data: AppData, branchId: string) {
   return false
 }
 
+function mergeCalendar(previous: Task["calendar"], next: Task["calendar"]) {
+  if (!previous || !next || previous.at !== next.at) return next
+  return {
+    ...next,
+    reminders: {
+      week: { ...next.reminders.week, sentAt: previous.reminders.week.sentAt },
+      three_days: { ...next.reminders.three_days, sentAt: previous.reminders.three_days.sentAt },
+      day: { ...next.reminders.day, sentAt: previous.reminders.day.sentAt },
+      hour: { ...next.reminders.hour, sentAt: previous.reminders.hour.sentAt },
+    },
+  }
+}
+
 export async function createTask(input: unknown) {
   const values = taskInputSchema.parse(input)
   if (values.status === "paused") throw new Error("Статус «На паузе» нельзя поставить вручную")
@@ -47,6 +60,7 @@ export async function createTask(input: unknown) {
     id: nanoid(),
     ...values,
     status,
+    calendar: status === "calendar" ? values.calendar : null,
     sort: nextSort(Object.values(data.tasks).filter((item) => item.branchId === values.branchId)),
     createdAt: now,
     updatedAt: now,
@@ -76,6 +90,7 @@ export async function updateTask(id: string, input: unknown) {
     ...existing,
     ...values,
     status,
+    calendar: status === "calendar" ? mergeCalendar(existing.calendar, values.calendar) : null,
     updatedAt: now,
     completedAt: status === "done" ? existing.completedAt ?? now : null,
     dailyStatus: status === "in_progress" ? existing.dailyStatus : null,
@@ -89,6 +104,9 @@ export async function changeTaskStatus(id: string, status: unknown) {
   const data = await readData()
   const existing = data.tasks[id]
   if (!existing) throw new Error("Задача не найдена")
+  if (nextStatus === "calendar" && !existing.calendar) {
+    throw new Error("Для статуса «Календарь» нужно указать дату и время")
+  }
   const now = new Date().toISOString()
   const task: Task = {
     ...existing,
@@ -96,6 +114,7 @@ export async function changeTaskStatus(id: string, status: unknown) {
     updatedAt: now,
     completedAt: nextStatus === "done" ? existing.completedAt ?? now : null,
     dailyStatus: nextStatus === "in_progress" ? existing.dailyStatus : null,
+    calendar: nextStatus === "calendar" ? existing.calendar : null,
   }
   return writeData({ ...data, tasks: { ...data.tasks, [id]: task } })
 }

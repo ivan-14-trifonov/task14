@@ -2,7 +2,8 @@ import { Save } from "lucide-react"
 import { createTaskAction, updateTaskAction } from "@/lib/data/actions"
 import { AutoCloseForm } from "@/components/auto-close-form"
 import { BranchLevelSelect } from "@/components/branch-level-select"
-import { Button, Input, Label, Select, Textarea } from "@/components/ui"
+import { TaskCalendarFields } from "@/components/task-calendar-fields"
+import { Button, Input, Label, Textarea } from "@/components/ui"
 import type { AppData, Task } from "@/types"
 
 export function TaskForm({
@@ -28,18 +29,7 @@ export function TaskForm({
         <Textarea name="description" defaultValue={task?.description ?? ""} />
       </Label>
       <BranchLevelSelect data={data} name="branchId" label="Ветка" defaultValue={task?.branchId ?? defaultBranchId ?? ""} />
-      <Label>
-        Статус
-        <Select name="status" required defaultValue={task?.status ?? "planned"}>
-          {task?.status === "paused" ? <option value="paused">На паузе</option> : null}
-          <option value="in_progress">В работе</option>
-          <option value="planned">В плане</option>
-          <option value="recurring">Повторяющаяся задача</option>
-          <option value="on_demand">Задача по требованию</option>
-          <option value="period">Задача периода</option>
-          <option value="done">Выполнено</option>
-        </Select>
-      </Label>
+      <TaskCalendarFields task={task} />
       <Button type="submit">
         <Save className="size-4" />
         Сохранить

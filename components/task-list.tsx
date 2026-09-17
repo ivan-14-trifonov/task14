@@ -1,4 +1,4 @@
-import { CheckCircle2, RotateCcw, Pencil } from "lucide-react"
+import { CalendarClock, CheckCircle2, RotateCcw, Pencil } from "lucide-react"
 import { completeTaskAction, deleteTaskAction, restoreTaskAction } from "@/lib/data/actions"
 import { formatDate } from "@/lib/utils"
 import { ConfirmDialog } from "@/components/confirm-dialog"
@@ -26,6 +26,12 @@ export function TaskList({ data, tasks, archive = false }: { data: AppData; task
                 <StatusBadge status={task.status} />
               </div>
               <TaskStatusControls task={task} />
+              {task.calendar ? (
+                <p className="mt-2 flex items-center gap-1.5 text-sm font-medium text-cyan-700">
+                  <CalendarClock className="size-4" />
+                  {formatDate(task.calendar.at)}
+                </p>
+              ) : null}
               {task.description ? <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">{task.description}</p> : null}
               {!archive ? <TaskDailyControls task={task} /> : null}
               <p className="mt-3 text-xs text-muted-foreground">
