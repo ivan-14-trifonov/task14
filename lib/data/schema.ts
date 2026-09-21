@@ -15,13 +15,22 @@ export const taskStatusSchema = z.enum([
 ])
 export const taskDailyStatusSchema = z.enum(["worked", "closed"])
 const dateKeySchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
+function toMoscowDateKey(value: string) {
+  return new Intl.DateTimeFormat("sv-SE", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    timeZone: "Europe/Moscow",
+  }).format(new Date(value))
+}
+const calendarDateSchema = z.union([dateKeySchema, z.string().datetime().transform(toMoscowDateKey)])
 const calendarReminderSchema = z.object({
   enabled: z.boolean(),
   sentAt: z.string().datetime().nullable(),
 })
 const calendarSchema = z
   .object({
-    at: z.string().datetime(),
+    at: calendarDateSchema,
     reminders: z.object({
       week: calendarReminderSchema,
       three_days: calendarReminderSchema,
@@ -93,11 +102,11 @@ export const taskInputSchema = z.object({
   reminderDay: z.boolean().default(true),
 }).superRefine((value, ctx) => {
   if (value.status !== "calendar") return
-  if (!z.string().datetime().safeParse(value.calendarAt).success) {
+  if (!dateKeySchema.safeParse(value.calendarAt).success) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ["calendarAt"],
-      message: "Укажите дату и время",
+      message: "Укажите дату",
     })
   }
 }).transform((value) => ({

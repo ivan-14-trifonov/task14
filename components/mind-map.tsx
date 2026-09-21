@@ -7,7 +7,7 @@ import { BranchTimingBadge } from "@/components/branch-timing-badge"
 import { BranchTitle } from "@/components/branch-title"
 import { BranchStatusDot } from "@/components/status-badge"
 import { Card } from "@/components/ui"
-import { cn, formatDate } from "@/lib/utils"
+import { cn, formatCalendarDate } from "@/lib/utils"
 import type { AppData, Branch, Task } from "@/types"
 
 const NODE_MIN_WIDTH = 160
@@ -548,7 +548,7 @@ export function MindMap({ data }: { data: AppData }) {
                   {task.status === "uncontrolled" ? "×" : null}
                 </span>
                 <span className={cn("min-w-0 break-words", task.status === "uncontrolled" && "line-through")}>
-                  {task.status === "calendar" && task.calendar ? `${formatDate(task.calendar.at)} — ${task.title}` : task.title}
+                  {task.status === "calendar" && task.calendar ? `${formatCalendarDate(task.calendar.at)} — ${task.title}` : task.title}
                 </span>
               </li>
             ))}

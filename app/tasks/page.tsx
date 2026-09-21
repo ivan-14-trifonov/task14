@@ -15,31 +15,20 @@ export default async function TasksPage({
   const session = await requireAdmin()
   const params = await searchParams
   const data = await getDataForPage()
-  const status =
-    params.status === "in_progress" ||
-    params.status === "planned" ||
-    params.status === "recurring" ||
-    params.status === "on_demand" ||
-    params.status === "period" ||
-    params.status === "today" ||
-    params.status === "calendar" ||
-    params.status === "uncontrolled"
-      ? params.status
-      : "all"
   const tasks = getFilteredTasks(data, {
     query: params.q,
-    status,
+    status: "calendar",
     branchId: params.branchId ?? "all",
     includeDescendants: true,
-  }).filter((task) => task.status !== "done")
+  }).sort((a, b) => (a.calendar?.at ?? "").localeCompare(b.calendar?.at ?? "") || a.sort - b.sort || a.title.localeCompare(b.title, "ru"))
 
   return (
     <AppShell session={session}>
       <section className="grid gap-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-semibold">Все задачи</h1>
-            <p className="text-sm text-muted-foreground">Активные задачи, отсортированные по дате обновления.</p>
+            <h1 className="text-2xl font-semibold">Календарь</h1>
+            <p className="text-sm text-muted-foreground">Календарные задачи, самые ранние даты сверху.</p>
           </div>
           <DialogButton
             title="Новая задача"
@@ -54,8 +43,8 @@ export default async function TasksPage({
             <TaskForm data={data} />
           </DialogButton>
         </div>
-        <TaskFilters data={data} defaults={params} />
-        <TaskList data={data} tasks={tasks} />
+        <TaskFilters data={data} defaults={params} hideStatus />
+        <TaskList data={data} tasks={tasks} emptyText="Календарных задач пока нет." />
       </section>
     </AppShell>
   )

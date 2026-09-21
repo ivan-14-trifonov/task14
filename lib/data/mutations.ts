@@ -104,7 +104,7 @@ export async function changeTaskStatus(id: string, status: unknown) {
   const existing = data.tasks[id]
   if (!existing) throw new Error("Задача не найдена")
   if (nextStatus === "calendar" && !existing.calendar) {
-    throw new Error("Для статуса «Календарь» нужно указать дату и время")
+    throw new Error("Для статуса «Календарь» нужно указать дату")
   }
   const now = new Date().toISOString()
   const task: Task = {

@@ -1,4 +1,4 @@
-import { Download, FolderTree, ListTodo, Network } from "lucide-react"
+import { CalendarDays, Download, FolderTree, Network } from "lucide-react"
 import { SignOutButton } from "@/components/auth-buttons"
 import { LinkButton } from "@/components/ui"
 import type { Session } from "next-auth"
@@ -22,8 +22,8 @@ export function AppShell({ children, session }: { children: React.ReactNode; ses
               Ментальная карта
             </LinkButton>
             <LinkButton href="/tasks" variant="ghost">
-              <ListTodo className="size-4" />
-              Все задачи
+              <CalendarDays className="size-4" />
+              Календарь
             </LinkButton>
             <LinkButton href="/api/data/download" variant="ghost">
               <Download className="size-4" />

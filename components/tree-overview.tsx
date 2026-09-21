@@ -20,7 +20,7 @@ export function TreeOverview({ data, view = "tree" }: { data: AppData; view?: "t
           <div>
             <h1 className="text-2xl font-semibold">{isMindMap ? "Ментальная карта" : "Дерево"}</h1>
             <p className="text-sm text-muted-foreground">
-              {isMindMap ? "Визуальная карта всех направлений." : "Все направления со всей вложенностью."}
+              {isMindMap ? "Визуальная карта всех направлений." : "Направления первого уровня. Подветки раскрываются стрелкой."}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">

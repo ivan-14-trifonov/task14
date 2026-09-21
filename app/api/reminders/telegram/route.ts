@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server"
 import { readData, writeData } from "@/lib/data/storage"
 import { getBranchPath } from "@/lib/data/tree"
+import { formatCalendarDate } from "@/lib/utils"
 import type { AppData, CalendarReminderKey, Task } from "@/types"
 
 export const dynamic = "force-dynamic"
 
-const REMINDER_OFFSETS: Record<CalendarReminderKey, number> = {
-  week: 7 * 24 * 60 * 60 * 1000,
-  three_days: 3 * 24 * 60 * 60 * 1000,
-  day: 24 * 60 * 60 * 1000,
+const REMINDER_OFFSETS_DAYS: Record<CalendarReminderKey, number> = {
+  week: 7,
+  three_days: 3,
+  day: 1,
 }
 
 const REMINDER_LABELS: Record<CalendarReminderKey, string> = {
@@ -16,7 +17,7 @@ const REMINDER_LABELS: Record<CalendarReminderKey, string> = {
   three_days: "за 3 дня",
   day: "за 1 день",
 }
-const DUE_LOOKAHEAD_MS = 24 * 60 * 60 * 1000
+const DAY_MS = 24 * 60 * 60 * 1000
 
 function isAuthorized(request: Request) {
   const secret = process.env.CRON_SECRET
@@ -24,24 +25,30 @@ function isAuthorized(request: Request) {
   return request.headers.get("authorization") === `Bearer ${secret}`
 }
 
-function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat("ru-RU", {
-    dateStyle: "medium",
-    timeStyle: "short",
+function getMoscowDateKey(value = new Date()) {
+  return new Intl.DateTimeFormat("sv-SE", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
     timeZone: "Europe/Moscow",
-  }).format(new Date(value))
+  }).format(value)
 }
 
-function getDueReminderKeys(task: Task, now: number) {
-  if (task.status !== "calendar" || !task.calendar) return []
-  const eventTime = new Date(task.calendar.at).getTime()
-  if (Number.isNaN(eventTime) || now >= eventTime) return []
+function addDays(dateKey: string, days: number) {
+  const [year, month, day] = dateKey.split("-").map(Number)
+  const timestamp = Date.UTC(year, month - 1, day) + days * DAY_MS
+  return new Date(timestamp).toISOString().slice(0, 10)
+}
 
-  return (Object.keys(REMINDER_OFFSETS) as CalendarReminderKey[]).filter((key) => {
+function getDueReminderKeys(task: Task, today: string) {
+  if (task.status !== "calendar" || !task.calendar) return []
+  const eventDate = task.calendar.at
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(eventDate) || today >= eventDate) return []
+
+  return (Object.keys(REMINDER_OFFSETS_DAYS) as CalendarReminderKey[]).filter((key) => {
     const reminder = task.calendar?.reminders[key]
     if (!reminder?.enabled || reminder.sentAt) return false
-    const dueAt = eventTime - REMINDER_OFFSETS[key]
-    return dueAt >= now && dueAt < now + DUE_LOOKAHEAD_MS
+    return addDays(eventDate, -REMINDER_OFFSETS_DAYS[key]) === today
   })
 }
 
@@ -51,7 +58,7 @@ function buildMessage(task: Task, key: CalendarReminderKey, data: AppData) {
     `Напоминание ${REMINDER_LABELS[key]}`,
     "",
     task.title,
-    `Когда: ${formatDateTime(task.calendar?.at ?? "")}`,
+    `Когда: ${formatCalendarDate(task.calendar?.at ?? "")}`,
     path ? `Ветка: ${path}` : null,
     task.description ? `\n${task.description}` : null,
   ]
@@ -85,13 +92,13 @@ export async function GET(request: Request) {
   }
 
   const data = await readData()
-  const now = Date.now()
-  const sentAt = new Date(now).toISOString()
+  const today = getMoscowDateKey()
+  const sentAt = new Date().toISOString()
   const tasks = { ...data.tasks }
   let sent = 0
 
   for (const task of Object.values(data.tasks)) {
-    const dueKeys = getDueReminderKeys(task, now)
+    const dueKeys = getDueReminderKeys(task, today)
     if (!dueKeys.length || !task.calendar) continue
 
     let updatedTask = task

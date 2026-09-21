@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { cn, formatDate } from "@/lib/utils"
+import { cn, formatCalendarDate } from "@/lib/utils"
 import type { Task } from "@/types"
 
 const TOOLTIP_WIDTH = 256
@@ -224,7 +224,7 @@ export function BranchCounts({
                   {task.status === "uncontrolled" ? "×" : null}
                 </span>
                 <span className={cn("min-w-0 break-words", task.status === "uncontrolled" && "line-through")}>
-                  {task.status === "calendar" && task.calendar ? `${formatDate(task.calendar.at)} — ${task.title}` : task.title}
+                  {task.status === "calendar" && task.calendar ? `${formatCalendarDate(task.calendar.at)} — ${task.title}` : task.title}
                 </span>
               </li>
             ))}

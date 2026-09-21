@@ -1,24 +1,27 @@
 import { Search } from "lucide-react"
 import { BranchLevelSelect } from "@/components/branch-level-select"
 import { Button, Input, Label, Select } from "@/components/ui"
+import { cn } from "@/lib/utils"
 import type { AppData, TaskStatus } from "@/types"
 
 export function TaskFilters({
   data,
   defaults,
   archive = false,
+  hideStatus = false,
 }: {
   data: AppData
   defaults: { q?: string; status?: string; branchId?: string }
   archive?: boolean
+  hideStatus?: boolean
 }) {
   return (
-    <form className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-[1fr_180px_220px_auto]">
+    <form className={cn("grid gap-3 rounded-lg border bg-white p-4", hideStatus || archive ? "md:grid-cols-[1fr_220px_auto]" : "md:grid-cols-[1fr_180px_220px_auto]")}>
       <Label>
         Поиск
         <Input name="q" defaultValue={defaults.q ?? ""} placeholder="Название или описание" />
       </Label>
-      {!archive ? (
+      {!archive && !hideStatus ? (
         <Label>
           Статус
           <Select name="status" defaultValue={defaults.status ?? "all"}>

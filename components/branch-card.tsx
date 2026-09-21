@@ -3,6 +3,7 @@ import { Folder, Pencil, Plus } from "lucide-react"
 import { getDirectBranchCountTasks, getDirectBranchTaskCounts } from "@/lib/data/counts"
 import { getChildren } from "@/lib/data/tree"
 import { BranchCounts } from "@/components/branch-counts"
+import { BranchDisclosure } from "@/components/branch-disclosure"
 import { BranchForm } from "@/components/branch-form"
 import { BranchSortableList } from "@/components/branch-sortable-list"
 import { BranchTimingBadge } from "@/components/branch-timing-badge"
@@ -63,11 +64,13 @@ export function BranchCard({ branch, data }: { branch: Branch; data: AppData }) 
         </div>
       </div>
       {children.length ? (
-        <BranchSortableList ids={children.map((child) => child.id)} parentId={branch.id} className="mt-4 grid gap-2 border-l pl-4">
-          {children.map((child) => (
-            <BranchTreeNode key={child.id} branch={child} data={data} />
-          ))}
-        </BranchSortableList>
+        <BranchDisclosure className="mt-3">
+          <BranchSortableList ids={children.map((child) => child.id)} parentId={branch.id} className="mt-1 grid gap-2 border-l pl-4">
+            {children.map((child) => (
+              <BranchTreeNode key={child.id} branch={child} data={data} />
+            ))}
+          </BranchSortableList>
+        </BranchDisclosure>
       ) : null}
     </Card>
   )
@@ -103,11 +106,13 @@ function BranchTreeNode({ branch, data }: { branch: Branch; data: AppData }) {
         </div>
       </Link>
       {children.length ? (
-        <BranchSortableList ids={children.map((child) => child.id)} parentId={branch.id} className="ml-3 grid gap-2 border-l pl-3">
-          {children.map((child) => (
-            <BranchTreeNode key={child.id} branch={child} data={data} />
-          ))}
-        </BranchSortableList>
+        <BranchDisclosure className="ml-1">
+          <BranchSortableList ids={children.map((child) => child.id)} parentId={branch.id} className="ml-3 mt-1 grid gap-2 border-l pl-3">
+            {children.map((child) => (
+              <BranchTreeNode key={child.id} branch={child} data={data} />
+            ))}
+          </BranchSortableList>
+        </BranchDisclosure>
       ) : null}
     </div>
   )

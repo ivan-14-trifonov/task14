@@ -1,27 +1,25 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { Input, Label, Select } from "@/components/ui"
 import type { Task, TaskStatus } from "@/types"
 
-function toLocalInputValue(value?: string | null) {
+function toDateInputValue(value?: string | null) {
   if (!value) return ""
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return ""
-  const offsetDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000)
-  return offsetDate.toISOString().slice(0, 16)
-}
-
-function toIsoValue(value: string) {
-  if (!value) return ""
-  const date = new Date(value)
-  return Number.isNaN(date.getTime()) ? "" : date.toISOString()
+  return new Intl.DateTimeFormat("sv-SE", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    timeZone: "Europe/Moscow",
+  }).format(date)
 }
 
 export function TaskCalendarFields({ task }: { task?: Task }) {
   const [status, setStatus] = useState<TaskStatus>(task?.status ?? "planned")
-  const [calendarAtLocal, setCalendarAtLocal] = useState(() => toLocalInputValue(task?.calendar?.at))
-  const calendarAt = useMemo(() => toIsoValue(calendarAtLocal), [calendarAtLocal])
+  const [calendarAt, setCalendarAt] = useState(() => toDateInputValue(task?.calendar?.at))
   const reminders = task?.calendar?.reminders
 
   return (
@@ -51,12 +49,12 @@ export function TaskCalendarFields({ task }: { task?: Task }) {
         <div className="grid gap-3 rounded-md border bg-muted/30 p-3">
           <input type="hidden" name="calendarAt" value={calendarAt} />
           <Label>
-            Дата и время
+            Дата
             <Input
-              type="datetime-local"
+              type="date"
               required
-              value={calendarAtLocal}
-              onChange={(event) => setCalendarAtLocal(event.target.value)}
+              value={calendarAt}
+              onChange={(event) => setCalendarAt(event.target.value)}
             />
           </Label>
           <div className="grid gap-2 text-sm">

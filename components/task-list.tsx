@@ -1,6 +1,6 @@
 import { CalendarClock, CheckCircle2, RotateCcw, Pencil } from "lucide-react"
 import { completeTaskAction, deleteTaskAction, restoreTaskAction } from "@/lib/data/actions"
-import { formatDate } from "@/lib/utils"
+import { formatCalendarDate, formatDate } from "@/lib/utils"
 import { ConfirmDialog } from "@/components/confirm-dialog"
 import { DialogButton } from "@/components/dialog-button"
 import { StatusBadge } from "@/components/status-badge"
@@ -10,9 +10,19 @@ import { TaskForm } from "@/components/task-form"
 import { TaskStatusControls } from "@/components/task-status-controls"
 import type { AppData, Task } from "@/types"
 
-export function TaskList({ data, tasks, archive = false }: { data: AppData; tasks: Task[]; archive?: boolean }) {
+export function TaskList({
+  data,
+  tasks,
+  archive = false,
+  emptyText,
+}: {
+  data: AppData
+  tasks: Task[]
+  archive?: boolean
+  emptyText?: string
+}) {
   if (!tasks.length) {
-    return <Card className="p-6 text-sm text-muted-foreground">{archive ? "Архив пуст." : "Активных задач пока нет."}</Card>
+    return <Card className="p-6 text-sm text-muted-foreground">{emptyText ?? (archive ? "Архив пуст." : "Активных задач пока нет.")}</Card>
   }
 
   return (
@@ -29,7 +39,7 @@ export function TaskList({ data, tasks, archive = false }: { data: AppData; task
               {task.calendar ? (
                 <p className="mt-2 flex items-center gap-1.5 text-sm font-medium text-cyan-700">
                   <CalendarClock className="size-4" />
-                  {formatDate(task.calendar.at)}
+                  {formatCalendarDate(task.calendar.at)}
                 </p>
               ) : null}
               {task.description ? <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">{task.description}</p> : null}
