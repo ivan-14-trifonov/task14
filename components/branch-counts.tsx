@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { BrainstormIcon } from "@/components/brainstorm-icon"
 import { cn, formatCalendarDate } from "@/lib/utils"
 import type { Task } from "@/types"
 
@@ -21,6 +22,7 @@ export function BranchCounts({
   today,
   calendar,
   uncontrolled,
+  brainstorm,
   planned,
   tasks = [],
   compact = false,
@@ -32,6 +34,7 @@ export function BranchCounts({
   today: number
   calendar: number
   uncontrolled: number
+  brainstorm: number
   planned: number
   tasks?: Task[]
   compact?: boolean
@@ -46,7 +49,8 @@ export function BranchCounts({
       task.status === "period" ||
       task.status === "today" ||
       task.status === "calendar" ||
-      task.status === "uncontrolled",
+      task.status === "uncontrolled" ||
+      task.brainstorm,
   )
 
   function showTooltip(element: HTMLDivElement) {
@@ -103,6 +107,7 @@ export function BranchCounts({
     today === 0 &&
     calendar === 0 &&
     uncontrolled === 0 &&
+    brainstorm === 0 &&
     planned === 0
   ) return null
 
@@ -189,6 +194,15 @@ export function BranchCounts({
             {uncontrolled}
           </span>
         ) : null}
+        {brainstorm ? (
+          <span
+            className="inline-flex items-center gap-0.5 rounded-full bg-fuchsia-50 px-1.5 text-[10px] font-bold leading-4 text-fuchsia-700 ring-1 ring-fuchsia-200"
+            title="Мозговой штурм"
+          >
+            <BrainstormIcon className="size-3" />
+            {brainstorm}
+          </span>
+        ) : null}
         {planned ? (
           <span
             className="inline-flex min-w-4 items-center justify-center rounded-full bg-slate-200 px-1 text-[10px] font-bold leading-4 text-slate-600"
@@ -224,6 +238,7 @@ export function BranchCounts({
                   {task.status === "uncontrolled" ? "×" : null}
                 </span>
                 <span className={cn("min-w-0 break-words", task.status === "uncontrolled" && "line-through")}>
+                  {task.brainstorm ? <BrainstormIcon className="mr-1 size-3 align-[-2px]" /> : null}
                   {task.status === "calendar" && task.calendar ? `${formatCalendarDate(task.calendar.at)} — ${task.title}` : task.title}
                 </span>
               </li>

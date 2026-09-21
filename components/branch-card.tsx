@@ -41,6 +41,7 @@ export function BranchCard({ branch, data }: { branch: Branch; data: AppData }) 
               today={counts.today}
               calendar={counts.calendar}
               uncontrolled={counts.uncontrolled}
+              brainstorm={counts.brainstorm}
               planned={counts.planned}
               tasks={countTasks}
             />
@@ -99,6 +100,7 @@ function BranchTreeNode({ branch, data }: { branch: Branch; data: AppData }) {
             today={counts.today}
             calendar={counts.calendar}
             uncontrolled={counts.uncontrolled}
+            brainstorm={counts.brainstorm}
             planned={counts.planned}
             tasks={countTasks}
             compact

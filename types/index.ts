@@ -40,6 +40,7 @@ export type Task = {
   createdAt: string
   updatedAt: string
   completedAt: string | null
+  brainstorm: boolean
   dailyStatus: {
     date: string
     status: TaskDailyStatus
@@ -74,6 +75,7 @@ export type BranchTaskCounts = {
   today: number
   calendar: number
   uncontrolled: number
+  brainstorm: number
   planned: number
   done: number
 }

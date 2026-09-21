@@ -22,6 +22,7 @@ function taskInputFromForm(formData: FormData) {
     description: getString(formData, "description"),
     branchId: getString(formData, "branchId"),
     status: getString(formData, "status"),
+    brainstorm: formData.get("brainstorm") === "on",
     calendarAt: getString(formData, "calendarAt"),
     reminderWeek: formData.get("reminderWeek") === "on",
     reminderThreeDays: formData.get("reminderThreeDays") === "on",

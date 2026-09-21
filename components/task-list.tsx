@@ -1,6 +1,7 @@
 import { CalendarClock, CheckCircle2, RotateCcw, Pencil } from "lucide-react"
 import { completeTaskAction, deleteTaskAction, restoreTaskAction } from "@/lib/data/actions"
 import { formatCalendarDate, formatDate } from "@/lib/utils"
+import { BrainstormIcon } from "@/components/brainstorm-icon"
 import { ConfirmDialog } from "@/components/confirm-dialog"
 import { DialogButton } from "@/components/dialog-button"
 import { StatusBadge } from "@/components/status-badge"
@@ -33,6 +34,7 @@ export function TaskList({
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="font-medium">{task.title}</h3>
+                {task.brainstorm ? <BrainstormIcon /> : null}
                 <StatusBadge status={task.status} />
               </div>
               <TaskStatusControls task={task} />

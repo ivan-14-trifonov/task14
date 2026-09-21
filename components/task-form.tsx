@@ -29,6 +29,10 @@ export function TaskForm({
         <Textarea name="description" defaultValue={task?.description ?? ""} />
       </Label>
       <BranchLevelSelect data={data} name="branchId" label="Ветка" defaultValue={task?.branchId ?? defaultBranchId ?? ""} />
+      <label className="flex items-center gap-2 text-sm font-medium">
+        <input type="checkbox" name="brainstorm" defaultChecked={task?.brainstorm ?? false} className="size-4 rounded border" />
+        Мозговой штурм
+      </label>
       <TaskCalendarFields task={task} />
       <Button type="submit">
         <Save className="size-4" />

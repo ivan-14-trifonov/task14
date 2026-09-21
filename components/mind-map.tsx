@@ -5,6 +5,7 @@ import { useEffect, useState } from "react"
 import { getChildren } from "@/lib/data/tree"
 import { BranchTimingBadge } from "@/components/branch-timing-badge"
 import { BranchTitle } from "@/components/branch-title"
+import { BrainstormIcon } from "@/components/brainstorm-icon"
 import { BranchStatusDot } from "@/components/status-badge"
 import { Card } from "@/components/ui"
 import { cn, formatCalendarDate } from "@/lib/utils"
@@ -111,6 +112,7 @@ function getBranchMapTasks(branchId: string, data: AppData, showAll: boolean) {
         task.status === "on_demand" ||
         task.status === "calendar" ||
         task.status === "uncontrolled" ||
+        (task.brainstorm && task.status !== "done") ||
         (showAll && task.status === "paused")),
   )
   const hiddenPausedTasks = showAll
@@ -155,6 +157,7 @@ function estimateBranchNodeWidth(branch: Branch, tasks: Task[], showAll: boolean
     tasks.some((task) => task.status === "recurring"),
     tasks.some((task) => task.status === "on_demand"),
     tasks.some((task) => task.status === "calendar"),
+    tasks.some((task) => task.brainstorm),
     showAll && tasks.some((task) => task.status === "paused"),
     Boolean(branch.timing),
     branch.status === "in_progress",
@@ -548,6 +551,7 @@ export function MindMap({ data }: { data: AppData }) {
                   {task.status === "uncontrolled" ? "×" : null}
                 </span>
                 <span className={cn("min-w-0 break-words", task.status === "uncontrolled" && "line-through")}>
+                  {task.brainstorm ? <BrainstormIcon className="mr-1 size-3 align-[-2px]" /> : null}
                   {task.status === "calendar" && task.calendar ? `${formatCalendarDate(task.calendar.at)} — ${task.title}` : task.title}
                 </span>
               </li>
@@ -587,6 +591,7 @@ function BranchBubble({
       task.status === "on_demand" ||
       task.status === "calendar" ||
       task.status === "uncontrolled" ||
+      (task.brainstorm && task.status !== "done") ||
       (showAll && task.status === "paused"),
   )
   const inProgressCount = tasks.filter((task) => task.status === "in_progress").length
@@ -594,6 +599,7 @@ function BranchBubble({
   const recurringCount = tasks.filter((task) => task.status === "recurring").length
   const onDemandCount = tasks.filter((task) => task.status === "on_demand").length
   const calendarCount = tasks.filter((task) => task.status === "calendar").length
+  const brainstormCount = tasks.filter((task) => task.brainstorm && task.status !== "done").length
   const pausedCount = showAll ? tasks.filter((task) => task.status === "paused").length : 0
 
   function showTooltip(element: HTMLElement) {
@@ -675,6 +681,15 @@ function BranchBubble({
               {calendarCount}
             </span>
           ) : null}
+          {brainstormCount ? (
+            <span
+              className="inline-flex items-center gap-0.5 rounded-full bg-fuchsia-50 px-1.5 text-[10px] font-bold leading-4 text-fuchsia-700 ring-1 ring-fuchsia-200"
+              title="Мозговой штурм"
+            >
+              <BrainstormIcon className="size-3" />
+              {brainstormCount}
+            </span>
+          ) : null}
           {pausedCount ? (
             <span className="inline-flex min-w-4 items-center justify-center rounded-full bg-yellow-500 px-1 text-[10px] font-bold leading-4 text-white">
               {pausedCount}
@@ -697,7 +712,10 @@ function TodayTaskBubble({ task, height, width, x, y }: { task: Task; height: nu
         className="flex box-border min-h-8 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-center text-xs font-semibold leading-[16px] text-emerald-800 shadow-sm"
         title="Сегодня"
       >
-        <span className="min-w-0 break-words">{task.title}</span>
+        <span className="min-w-0 break-words">
+          {task.brainstorm ? <BrainstormIcon className="mr-1 size-3 align-[-2px]" /> : null}
+          {task.title}
+        </span>
       </div>
     </div>
   )
@@ -718,7 +736,10 @@ function PeriodGroupBubble({ tasks, height, width, x, y }: { tasks: Task[]; heig
           {tasks.map((task) => (
             <li key={task.id} className="flex min-w-0 gap-1.5">
               <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-purple-500" aria-hidden="true" />
-              <span className="min-w-0 break-words">{task.title}</span>
+              <span className="min-w-0 break-words">
+                {task.brainstorm ? <BrainstormIcon className="mr-1 size-3 align-[-2px]" /> : null}
+                {task.title}
+              </span>
             </li>
           ))}
         </ul>

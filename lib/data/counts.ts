@@ -12,7 +12,8 @@ function sortCountTasks(data: AppData, branchIds: Set<string>) {
           task.status === "period" ||
           task.status === "today" ||
           task.status === "calendar" ||
-          task.status === "uncontrolled"),
+          task.status === "uncontrolled" ||
+          (task.brainstorm && task.status !== "done")),
     )
     .sort((a, b) => a.sort - b.sort || a.title.localeCompare(b.title, "ru"))
 }
@@ -29,11 +30,12 @@ export function getBranchTaskCounts(branchId: string, data: AppData): BranchTask
       if (task.status === "today") counts.today += 1
       if (task.status === "calendar") counts.calendar += 1
       if (task.status === "uncontrolled") counts.uncontrolled += 1
+      if (task.brainstorm && task.status !== "done") counts.brainstorm += 1
       if (task.status === "planned") counts.planned += 1
       if (task.status === "done") counts.done += 1
       return counts
     },
-    { inProgress: 0, recurring: 0, onDemand: 0, period: 0, today: 0, calendar: 0, uncontrolled: 0, planned: 0, done: 0 },
+    { inProgress: 0, recurring: 0, onDemand: 0, period: 0, today: 0, calendar: 0, uncontrolled: 0, brainstorm: 0, planned: 0, done: 0 },
   )
 }
 
@@ -48,11 +50,12 @@ export function getDirectBranchTaskCounts(branchId: string, data: AppData): Bran
       if (task.status === "today") counts.today += 1
       if (task.status === "calendar") counts.calendar += 1
       if (task.status === "uncontrolled") counts.uncontrolled += 1
+      if (task.brainstorm && task.status !== "done") counts.brainstorm += 1
       if (task.status === "planned") counts.planned += 1
       if (task.status === "done") counts.done += 1
       return counts
     },
-    { inProgress: 0, recurring: 0, onDemand: 0, period: 0, today: 0, calendar: 0, uncontrolled: 0, planned: 0, done: 0 },
+    { inProgress: 0, recurring: 0, onDemand: 0, period: 0, today: 0, calendar: 0, uncontrolled: 0, brainstorm: 0, planned: 0, done: 0 },
   )
 }
 

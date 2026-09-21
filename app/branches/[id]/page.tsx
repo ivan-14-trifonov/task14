@@ -142,6 +142,7 @@ export default async function BranchPage({
                 today={branchCounts.today}
                 calendar={branchCounts.calendar}
                 uncontrolled={branchCounts.uncontrolled}
+                brainstorm={branchCounts.brainstorm}
                 planned={branchCounts.planned}
                 tasks={branchCountTasks}
               />
@@ -241,6 +242,7 @@ export default async function BranchPage({
                             today={childCounts.today}
                             calendar={childCounts.calendar}
                             uncontrolled={childCounts.uncontrolled}
+                            brainstorm={childCounts.brainstorm}
                             planned={childCounts.planned}
                             tasks={childCountTasks}
                           />

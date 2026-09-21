@@ -70,6 +70,7 @@ export const taskSchema = z.object({
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
   completedAt: z.string().datetime().nullable(),
+  brainstorm: z.boolean().optional().default(false),
   dailyStatus: z
     .object({
       date: dateKeySchema,
@@ -96,6 +97,7 @@ export const taskInputSchema = z.object({
   description: z.string().trim().default(""),
   branchId: z.string().min(1, "Выберите ветку"),
   status: taskStatusSchema,
+  brainstorm: z.boolean().default(false),
   calendarAt: z.string().trim().default(""),
   reminderWeek: z.boolean().default(true),
   reminderThreeDays: z.boolean().default(true),
@@ -114,6 +116,7 @@ export const taskInputSchema = z.object({
   description: value.description,
   branchId: value.branchId,
   status: value.status,
+  brainstorm: value.brainstorm,
   calendar:
     value.status === "calendar"
       ? {
