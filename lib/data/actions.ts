@@ -27,6 +27,7 @@ function taskInputFromForm(formData: FormData) {
     reminderWeek: formData.get("reminderWeek") === "on",
     reminderThreeDays: formData.get("reminderThreeDays") === "on",
     reminderDay: formData.get("reminderDay") === "on",
+    reminderSameDay: formData.get("reminderSameDay") === "on",
   }
 }
 

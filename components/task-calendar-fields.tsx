@@ -71,6 +71,10 @@ export function TaskCalendarFields({ task }: { task?: Task }) {
               <input type="checkbox" name="reminderDay" defaultChecked={reminders?.day.enabled ?? true} />
               За 1 день
             </label>
+            <label className="flex items-center gap-2 text-muted-foreground">
+              <input type="checkbox" name="reminderSameDay" defaultChecked={reminders?.same_day.enabled ?? true} />
+              В день события
+            </label>
           </div>
         </div>
       ) : null}

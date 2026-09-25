@@ -707,16 +707,17 @@ function TodayTaskBubble({ task, height, width, x, y }: { task: Task; height: nu
       className="absolute z-10 -translate-x-1/2 -translate-y-1/2"
       style={{ left: x, top: y, width }}
     >
-      <div
+      <Link
+        href={`/branches/${task.branchId}#task-${task.id}`}
         style={{ height }}
-        className="flex box-border min-h-8 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-center text-xs font-semibold leading-[16px] text-emerald-800 shadow-sm"
+        className="flex box-border min-h-8 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-center text-xs font-semibold leading-[16px] text-emerald-800 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-100"
         title="Сегодня"
       >
         <span className="min-w-0 break-words">
           {task.brainstorm ? <BrainstormIcon className="mr-1 size-3 align-[-2px]" /> : null}
           {task.title}
         </span>
-      </div>
+      </Link>
     </div>
   )
 }
@@ -736,10 +737,13 @@ function PeriodGroupBubble({ tasks, height, width, x, y }: { tasks: Task[]; heig
           {tasks.map((task) => (
             <li key={task.id} className="flex min-w-0 gap-1.5">
               <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-purple-500" aria-hidden="true" />
-              <span className="min-w-0 break-words">
+              <Link
+                href={`/branches/${task.branchId}#task-${task.id}`}
+                className="min-w-0 break-words rounded-sm transition hover:text-purple-950 hover:underline"
+              >
                 {task.brainstorm ? <BrainstormIcon className="mr-1 size-3 align-[-2px]" /> : null}
                 {task.title}
-              </span>
+              </Link>
             </li>
           ))}
         </ul>

@@ -10,12 +10,14 @@ const REMINDER_OFFSETS_DAYS: Record<CalendarReminderKey, number> = {
   week: 7,
   three_days: 3,
   day: 1,
+  same_day: 0,
 }
 
 const REMINDER_LABELS: Record<CalendarReminderKey, string> = {
   week: "за неделю",
   three_days: "за 3 дня",
   day: "за 1 день",
+  same_day: "в день события",
 }
 const DAY_MS = 24 * 60 * 60 * 1000
 
@@ -43,7 +45,7 @@ function addDays(dateKey: string, days: number) {
 function getDueReminderKeys(task: Task, today: string) {
   if (task.status !== "calendar" || !task.calendar) return []
   const eventDate = task.calendar.at
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(eventDate) || today >= eventDate) return []
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(eventDate) || today > eventDate) return []
 
   return (Object.keys(REMINDER_OFFSETS_DAYS) as CalendarReminderKey[]).filter((key) => {
     const reminder = task.calendar?.reminders[key]

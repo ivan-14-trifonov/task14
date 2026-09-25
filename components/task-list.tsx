@@ -29,7 +29,7 @@ export function TaskList({
   return (
     <div className="grid gap-3">
       {tasks.map((task) => (
-        <Card key={task.id} className="p-4">
+        <Card key={task.id} id={`task-${task.id}`} className="scroll-mt-24 p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">

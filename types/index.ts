@@ -11,7 +11,7 @@ export type TaskStatus =
   | "paused"
   | "done"
 export type TaskDailyStatus = "worked" | "closed"
-export type CalendarReminderKey = "week" | "three_days" | "day"
+export type CalendarReminderKey = "week" | "three_days" | "day" | "same_day"
 
 export type Branch = {
   id: string

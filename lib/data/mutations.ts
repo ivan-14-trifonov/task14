@@ -44,6 +44,7 @@ function mergeCalendar(previous: Task["calendar"], next: Task["calendar"]) {
       week: { ...next.reminders.week, sentAt: previous.reminders.week.sentAt },
       three_days: { ...next.reminders.three_days, sentAt: previous.reminders.three_days.sentAt },
       day: { ...next.reminders.day, sentAt: previous.reminders.day.sentAt },
+      same_day: { ...next.reminders.same_day, sentAt: previous.reminders.same_day.sentAt },
     },
   }
 }
