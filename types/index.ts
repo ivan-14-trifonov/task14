@@ -3,7 +3,6 @@ export type TaskStatus =
   | "in_progress"
   | "planned"
   | "recurring"
-  | "on_demand"
   | "period"
   | "today"
   | "calendar"
@@ -70,7 +69,6 @@ export type AppData = {
 export type BranchTaskCounts = {
   inProgress: number
   recurring: number
-  onDemand: number
   period: number
   today: number
   calendar: number

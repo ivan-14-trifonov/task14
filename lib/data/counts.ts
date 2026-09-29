@@ -8,7 +8,6 @@ function sortCountTasks(data: AppData, branchIds: Set<string>) {
         branchIds.has(task.branchId) &&
         (task.status === "in_progress" ||
           task.status === "recurring" ||
-          task.status === "on_demand" ||
           task.status === "period" ||
           task.status === "today" ||
           task.status === "calendar" ||
@@ -25,7 +24,6 @@ export function getBranchTaskCounts(branchId: string, data: AppData): BranchTask
       if (!branchIds.has(task.branchId)) return counts
       if (task.status === "in_progress") counts.inProgress += 1
       if (task.status === "recurring") counts.recurring += 1
-      if (task.status === "on_demand") counts.onDemand += 1
       if (task.status === "period") counts.period += 1
       if (task.status === "today") counts.today += 1
       if (task.status === "calendar") counts.calendar += 1
@@ -35,7 +33,7 @@ export function getBranchTaskCounts(branchId: string, data: AppData): BranchTask
       if (task.status === "done") counts.done += 1
       return counts
     },
-    { inProgress: 0, recurring: 0, onDemand: 0, period: 0, today: 0, calendar: 0, uncontrolled: 0, brainstorm: 0, planned: 0, done: 0 },
+    { inProgress: 0, recurring: 0, period: 0, today: 0, calendar: 0, uncontrolled: 0, brainstorm: 0, planned: 0, done: 0 },
   )
 }
 
@@ -45,7 +43,6 @@ export function getDirectBranchTaskCounts(branchId: string, data: AppData): Bran
       if (task.branchId !== branchId) return counts
       if (task.status === "in_progress") counts.inProgress += 1
       if (task.status === "recurring") counts.recurring += 1
-      if (task.status === "on_demand") counts.onDemand += 1
       if (task.status === "period") counts.period += 1
       if (task.status === "today") counts.today += 1
       if (task.status === "calendar") counts.calendar += 1
@@ -55,7 +52,7 @@ export function getDirectBranchTaskCounts(branchId: string, data: AppData): Bran
       if (task.status === "done") counts.done += 1
       return counts
     },
-    { inProgress: 0, recurring: 0, onDemand: 0, period: 0, today: 0, calendar: 0, uncontrolled: 0, brainstorm: 0, planned: 0, done: 0 },
+    { inProgress: 0, recurring: 0, period: 0, today: 0, calendar: 0, uncontrolled: 0, brainstorm: 0, planned: 0, done: 0 },
   )
 }
 

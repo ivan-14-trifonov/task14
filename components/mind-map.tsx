@@ -109,7 +109,6 @@ function getBranchMapTasks(branchId: string, data: AppData, showAll: boolean) {
       task.branchId === branchId &&
       (task.status === "in_progress" ||
         task.status === "recurring" ||
-        task.status === "on_demand" ||
         task.status === "calendar" ||
         task.status === "uncontrolled" ||
         (task.brainstorm && task.status !== "done") ||
@@ -155,7 +154,6 @@ function estimateBranchNodeWidth(branch: Branch, tasks: Task[], showAll: boolean
     tasks.some((task) => task.status === "in_progress"),
     tasks.some((task) => task.status === "uncontrolled"),
     tasks.some((task) => task.status === "recurring"),
-    tasks.some((task) => task.status === "on_demand"),
     tasks.some((task) => task.status === "calendar"),
     tasks.some((task) => task.brainstorm),
     showAll && tasks.some((task) => task.status === "paused"),
@@ -542,7 +540,6 @@ export function MindMap({ data }: { data: AppData }) {
                       : "mt-1.5 size-1.5 rounded-full",
                     task.status === "in_progress" && "bg-red-500",
                     task.status === "recurring" && "border border-blue-600 bg-transparent",
-                    task.status === "on_demand" && "bg-yellow-500",
                     task.status === "calendar" && "bg-cyan-500",
                     task.status === "paused" && "bg-yellow-500",
                   )}
@@ -588,7 +585,6 @@ function BranchBubble({
     (task) =>
       task.status === "in_progress" ||
       task.status === "recurring" ||
-      task.status === "on_demand" ||
       task.status === "calendar" ||
       task.status === "uncontrolled" ||
       (task.brainstorm && task.status !== "done") ||
@@ -597,7 +593,6 @@ function BranchBubble({
   const inProgressCount = tasks.filter((task) => task.status === "in_progress").length
   const uncontrolledCount = tasks.filter((task) => task.status === "uncontrolled").length
   const recurringCount = tasks.filter((task) => task.status === "recurring").length
-  const onDemandCount = tasks.filter((task) => task.status === "on_demand").length
   const calendarCount = tasks.filter((task) => task.status === "calendar").length
   const brainstormCount = tasks.filter((task) => task.brainstorm && task.status !== "done").length
   const pausedCount = showAll ? tasks.filter((task) => task.status === "paused").length : 0
@@ -666,11 +661,6 @@ function BranchBubble({
               title="Повторяющиеся задачи"
             >
               {recurringCount}
-            </span>
-          ) : null}
-          {onDemandCount ? (
-            <span className="inline-flex min-w-4 items-center justify-center rounded-full bg-yellow-500 px-1 text-[10px] font-bold leading-4 text-white">
-              {onDemandCount}
             </span>
           ) : null}
           {calendarCount ? (

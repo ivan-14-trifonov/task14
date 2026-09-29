@@ -17,7 +17,6 @@ type TooltipPosition = {
 export function BranchCounts({
   inProgress,
   recurring,
-  onDemand,
   period,
   today,
   calendar,
@@ -29,7 +28,6 @@ export function BranchCounts({
 }: {
   inProgress: number
   recurring: number
-  onDemand: number
   period: number
   today: number
   calendar: number
@@ -45,7 +43,6 @@ export function BranchCounts({
     (task) =>
       task.status === "in_progress" ||
       task.status === "recurring" ||
-      task.status === "on_demand" ||
       task.status === "period" ||
       task.status === "today" ||
       task.status === "calendar" ||
@@ -102,7 +99,6 @@ export function BranchCounts({
   if (
     inProgress === 0 &&
     recurring === 0 &&
-    onDemand === 0 &&
     period === 0 &&
     today === 0 &&
     calendar === 0 &&
@@ -151,14 +147,6 @@ export function BranchCounts({
             title="Повторяющиеся задачи"
           >
             {recurring}
-          </span>
-        ) : null}
-        {onDemand ? (
-          <span
-            className="inline-flex min-w-4 items-center justify-center rounded-full bg-yellow-500 px-1 text-[10px] font-bold leading-4 text-white"
-            title="По требованию"
-          >
-            {onDemand}
           </span>
         ) : null}
         {period ? (
@@ -228,7 +216,6 @@ export function BranchCounts({
                       : "mt-1.5 size-1.5 rounded-full",
                     task.status === "in_progress" && "bg-red-500",
                     task.status === "recurring" && "border border-blue-600 bg-transparent",
-                    task.status === "on_demand" && "bg-yellow-500",
                     task.status === "period" && "bg-purple-500",
                     task.status === "today" && "bg-emerald-500",
                     task.status === "calendar" && "bg-cyan-500",

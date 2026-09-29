@@ -94,7 +94,6 @@ export default async function BranchPage({
   )
   const isDoNowTask = (task: Task) =>
     task.status === "recurring" ||
-    task.status === "on_demand" ||
     task.status === "period" ||
     task.status === "today" ||
     (task.status === "in_progress" && getTaskDailyState(task) !== "closed")
@@ -137,7 +136,6 @@ export default async function BranchPage({
               <BranchCounts
                 inProgress={branchCounts.inProgress}
                 recurring={branchCounts.recurring}
-                onDemand={branchCounts.onDemand}
                 period={branchCounts.period}
                 today={branchCounts.today}
                 calendar={branchCounts.calendar}
@@ -237,7 +235,6 @@ export default async function BranchPage({
                           <BranchCounts
                             inProgress={childCounts.inProgress}
                             recurring={childCounts.recurring}
-                            onDemand={childCounts.onDemand}
                             period={childCounts.period}
                             today={childCounts.today}
                             calendar={childCounts.calendar}
