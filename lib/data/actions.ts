@@ -46,6 +46,7 @@ function branchInputFromForm(formData: FormData) {
 function refresh() {
   revalidatePath("/")
   revalidatePath("/tasks")
+  revalidatePath("/delegated")
   revalidatePath("/branches", "page")
 }
 

@@ -1,4 +1,4 @@
-import { CalendarDays, Download, FolderTree, Network } from "lucide-react"
+import { CalendarDays, Download, FolderTree, Network, UserRoundCheck } from "lucide-react"
 import { SignOutButton } from "@/components/auth-buttons"
 import { LinkButton } from "@/components/ui"
 import type { Session } from "next-auth"
@@ -24,6 +24,10 @@ export function AppShell({ children, session }: { children: React.ReactNode; ses
             <LinkButton href="/tasks" variant="ghost">
               <CalendarDays className="size-4" />
               Календарь
+            </LinkButton>
+            <LinkButton href="/delegated" variant="ghost">
+              <UserRoundCheck className="size-4" />
+              Делегировано
             </LinkButton>
             <LinkButton href="/api/data/download" variant="ghost">
               <Download className="size-4" />

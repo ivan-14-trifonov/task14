@@ -6,6 +6,7 @@ import { getChildren } from "@/lib/data/tree"
 import { BranchTimingBadge } from "@/components/branch-timing-badge"
 import { BranchTitle } from "@/components/branch-title"
 import { BrainstormIcon } from "@/components/brainstorm-icon"
+import { DelegatedIcon } from "@/components/delegated-icon"
 import { BranchStatusDot } from "@/components/status-badge"
 import { Card } from "@/components/ui"
 import { cn, formatCalendarDate } from "@/lib/utils"
@@ -109,6 +110,7 @@ function getBranchMapTasks(branchId: string, data: AppData, showAll: boolean) {
       task.branchId === branchId &&
       (task.status === "in_progress" ||
         task.status === "recurring" ||
+        task.status === "delegated" ||
         task.status === "calendar" ||
         task.status === "uncontrolled" ||
         (task.brainstorm && task.status !== "done") ||
@@ -154,6 +156,7 @@ function estimateBranchNodeWidth(branch: Branch, tasks: Task[], showAll: boolean
     tasks.some((task) => task.status === "in_progress"),
     tasks.some((task) => task.status === "uncontrolled"),
     tasks.some((task) => task.status === "recurring"),
+    tasks.some((task) => task.status === "delegated"),
     tasks.some((task) => task.status === "calendar"),
     tasks.some((task) => task.brainstorm),
     showAll && tasks.some((task) => task.status === "paused"),
@@ -532,21 +535,25 @@ export function MindMap({ data }: { data: AppData }) {
           <ul className="space-y-1 text-muted-foreground">
             {tooltip.tasks.map((task) => (
               <li key={task.id} className="flex gap-2">
-                <span
-                  className={cn(
-                    "shrink-0",
-                    task.status === "uncontrolled"
-                      ? "mt-0.5 flex size-3 items-center justify-center text-[11px] font-bold leading-none text-red-600"
-                      : "mt-1.5 size-1.5 rounded-full",
-                    task.status === "in_progress" && "bg-red-500",
-                    task.status === "recurring" && "border border-blue-600 bg-transparent",
-                    task.status === "calendar" && "bg-cyan-500",
-                    task.status === "paused" && "bg-yellow-500",
-                  )}
-                  aria-hidden="true"
-                >
-                  {task.status === "uncontrolled" ? "×" : null}
-                </span>
+                {task.status === "delegated" ? (
+                  <DelegatedIcon className="mt-0.5 size-3.5" />
+                ) : (
+                  <span
+                    className={cn(
+                      "shrink-0",
+                      task.status === "uncontrolled"
+                        ? "mt-0.5 flex size-3 items-center justify-center text-[11px] font-bold leading-none text-red-600"
+                        : "mt-1.5 size-1.5 rounded-full",
+                      task.status === "in_progress" && "bg-red-500",
+                      task.status === "recurring" && "border border-blue-600 bg-transparent",
+                      task.status === "calendar" && "bg-cyan-500",
+                      task.status === "paused" && "bg-yellow-500",
+                    )}
+                    aria-hidden="true"
+                  >
+                    {task.status === "uncontrolled" ? "×" : null}
+                  </span>
+                )}
                 <span className={cn("min-w-0 break-words", task.status === "uncontrolled" && "line-through")}>
                   {task.brainstorm ? <BrainstormIcon className="mr-1 size-3 align-[-2px]" /> : null}
                   {task.status === "calendar" && task.calendar ? `${formatCalendarDate(task.calendar.at)} — ${task.title}` : task.title}
@@ -585,6 +592,7 @@ function BranchBubble({
     (task) =>
       task.status === "in_progress" ||
       task.status === "recurring" ||
+      task.status === "delegated" ||
       task.status === "calendar" ||
       task.status === "uncontrolled" ||
       (task.brainstorm && task.status !== "done") ||
@@ -593,6 +601,7 @@ function BranchBubble({
   const inProgressCount = tasks.filter((task) => task.status === "in_progress").length
   const uncontrolledCount = tasks.filter((task) => task.status === "uncontrolled").length
   const recurringCount = tasks.filter((task) => task.status === "recurring").length
+  const delegatedCount = tasks.filter((task) => task.status === "delegated").length
   const calendarCount = tasks.filter((task) => task.status === "calendar").length
   const brainstormCount = tasks.filter((task) => task.brainstorm && task.status !== "done").length
   const pausedCount = showAll ? tasks.filter((task) => task.status === "paused").length : 0
@@ -661,6 +670,15 @@ function BranchBubble({
               title="Повторяющиеся задачи"
             >
               {recurringCount}
+            </span>
+          ) : null}
+          {delegatedCount ? (
+            <span
+              className="inline-flex items-center gap-0.5 rounded-full bg-indigo-50 px-1.5 text-[10px] font-bold leading-4 text-indigo-700 ring-1 ring-indigo-200"
+              title="Делегировано"
+            >
+              <DelegatedIcon className="size-3" />
+              {delegatedCount}
             </span>
           ) : null}
           {calendarCount ? (

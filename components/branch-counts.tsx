@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { BrainstormIcon } from "@/components/brainstorm-icon"
+import { DelegatedIcon } from "@/components/delegated-icon"
 import { cn, formatCalendarDate } from "@/lib/utils"
 import type { Task } from "@/types"
 
@@ -17,6 +18,7 @@ type TooltipPosition = {
 export function BranchCounts({
   inProgress,
   recurring,
+  delegated,
   period,
   today,
   calendar,
@@ -28,6 +30,7 @@ export function BranchCounts({
 }: {
   inProgress: number
   recurring: number
+  delegated: number
   period: number
   today: number
   calendar: number
@@ -43,6 +46,7 @@ export function BranchCounts({
     (task) =>
       task.status === "in_progress" ||
       task.status === "recurring" ||
+      task.status === "delegated" ||
       task.status === "period" ||
       task.status === "today" ||
       task.status === "calendar" ||
@@ -99,6 +103,7 @@ export function BranchCounts({
   if (
     inProgress === 0 &&
     recurring === 0 &&
+    delegated === 0 &&
     period === 0 &&
     today === 0 &&
     calendar === 0 &&
@@ -147,6 +152,15 @@ export function BranchCounts({
             title="Повторяющиеся задачи"
           >
             {recurring}
+          </span>
+        ) : null}
+        {delegated ? (
+          <span
+            className="inline-flex items-center gap-0.5 rounded-full bg-indigo-50 px-1.5 text-[10px] font-bold leading-4 text-indigo-700 ring-1 ring-indigo-200"
+            title="Делегировано"
+          >
+            <DelegatedIcon className="size-3" />
+            {delegated}
           </span>
         ) : null}
         {period ? (
@@ -208,22 +222,26 @@ export function BranchCounts({
           <ul className="space-y-1 text-muted-foreground">
             {tooltipTasks.map((task) => (
               <li key={task.id} className="flex gap-2">
-                <span
-                  className={cn(
-                    "shrink-0",
-                    task.status === "uncontrolled"
-                      ? "mt-0.5 flex size-3 items-center justify-center text-[11px] font-bold leading-none text-red-600"
-                      : "mt-1.5 size-1.5 rounded-full",
-                    task.status === "in_progress" && "bg-red-500",
-                    task.status === "recurring" && "border border-blue-600 bg-transparent",
-                    task.status === "period" && "bg-purple-500",
-                    task.status === "today" && "bg-emerald-500",
-                    task.status === "calendar" && "bg-cyan-500",
-                  )}
-                  aria-hidden="true"
-                >
-                  {task.status === "uncontrolled" ? "×" : null}
-                </span>
+                {task.status === "delegated" ? (
+                  <DelegatedIcon className="mt-0.5 size-3.5" />
+                ) : (
+                  <span
+                    className={cn(
+                      "shrink-0",
+                      task.status === "uncontrolled"
+                        ? "mt-0.5 flex size-3 items-center justify-center text-[11px] font-bold leading-none text-red-600"
+                        : "mt-1.5 size-1.5 rounded-full",
+                      task.status === "in_progress" && "bg-red-500",
+                      task.status === "recurring" && "border border-blue-600 bg-transparent",
+                      task.status === "period" && "bg-purple-500",
+                      task.status === "today" && "bg-emerald-500",
+                      task.status === "calendar" && "bg-cyan-500",
+                    )}
+                    aria-hidden="true"
+                  >
+                    {task.status === "uncontrolled" ? "×" : null}
+                  </span>
+                )}
                 <span className={cn("min-w-0 break-words", task.status === "uncontrolled" && "line-through")}>
                   {task.brainstorm ? <BrainstormIcon className="mr-1 size-3 align-[-2px]" /> : null}
                   {task.status === "calendar" && task.calendar ? `${formatCalendarDate(task.calendar.at)} — ${task.title}` : task.title}

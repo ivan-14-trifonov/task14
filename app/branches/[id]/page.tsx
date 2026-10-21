@@ -136,6 +136,7 @@ export default async function BranchPage({
               <BranchCounts
                 inProgress={branchCounts.inProgress}
                 recurring={branchCounts.recurring}
+                delegated={branchCounts.delegated}
                 period={branchCounts.period}
                 today={branchCounts.today}
                 calendar={branchCounts.calendar}
@@ -235,6 +236,7 @@ export default async function BranchPage({
                           <BranchCounts
                             inProgress={childCounts.inProgress}
                             recurring={childCounts.recurring}
+                            delegated={childCounts.delegated}
                             period={childCounts.period}
                             today={childCounts.today}
                             calendar={childCounts.calendar}

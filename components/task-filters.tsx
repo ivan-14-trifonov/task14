@@ -29,6 +29,7 @@ export function TaskFilters({
             <option value={"in_progress" satisfies TaskStatus}>В работе</option>
             <option value={"planned" satisfies TaskStatus}>В плане</option>
             <option value={"recurring" satisfies TaskStatus}>Повторяющиеся</option>
+            <option value={"delegated" satisfies TaskStatus}>Делегировано</option>
             <option value={"period" satisfies TaskStatus}>Задачи периода</option>
             <option value={"today" satisfies TaskStatus}>Сегодня</option>
             <option value={"calendar" satisfies TaskStatus}>Календарь</option>

@@ -1,4 +1,5 @@
 import { setTaskStatusAction } from "@/lib/data/actions"
+import { DelegatedIcon } from "@/components/delegated-icon"
 import { cn } from "@/lib/utils"
 import type { Task, TaskStatus } from "@/types"
 
@@ -9,6 +10,7 @@ const quickStatuses: Array<{
 }> = [
   { status: "in_progress", label: "В работе", className: "bg-red-600 text-white" },
   { status: "recurring", label: "Повторяющаяся задача", className: "border border-blue-600 bg-transparent text-blue-700" },
+  { status: "delegated", label: "Делегировано", className: "bg-indigo-600 text-white" },
   { status: "period", label: "Задача периода", className: "bg-purple-600 text-white" },
   { status: "today", label: "Сегодня", className: "bg-emerald-500 text-white" },
   { status: "uncontrolled", label: "Не контролирую", className: "bg-red-50 text-red-700 ring-1 ring-red-300" },
@@ -34,7 +36,9 @@ export function TaskStatusControls({ task }: { task: Task }) {
                 item.className,
                 active ? "ring-2 ring-slate-900 ring-offset-2" : "opacity-75 hover:opacity-100",
               )}
-            />
+            >
+              {item.status === "delegated" ? <DelegatedIcon className="size-3 text-white" /> : null}
+            </button>
           </form>
         )
       })}

@@ -1,10 +1,12 @@
 import { cn } from "@/lib/utils"
+import { DelegatedIcon } from "@/components/delegated-icon"
 import type { BranchStatus, TaskStatus } from "@/types"
 
 const taskLabels: Record<TaskStatus, string> = {
   in_progress: "В работе",
   planned: "В плане",
   recurring: "Повторяющаяся",
+  delegated: "Делегировано",
   period: "Задача периода",
   today: "Сегодня",
   calendar: "Календарь",
@@ -21,6 +23,7 @@ export function StatusBadge({ status }: { status: TaskStatus }) {
         status === "in_progress" && "bg-red-50 text-red-700 ring-1 ring-red-200",
         status === "planned" && "bg-slate-100 text-slate-700 ring-1 ring-slate-200",
         status === "recurring" && "bg-white text-blue-700 ring-1 ring-blue-300",
+        status === "delegated" && "bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200",
         status === "period" && "bg-purple-50 text-purple-700 ring-1 ring-purple-200",
         status === "today" && "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
         status === "calendar" && "bg-cyan-50 text-cyan-700 ring-1 ring-cyan-200",
@@ -29,6 +32,7 @@ export function StatusBadge({ status }: { status: TaskStatus }) {
         status === "done" && "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
       )}
     >
+      {status === "delegated" ? <DelegatedIcon className="mr-1 size-3.5" /> : null}
       {taskLabels[status]}
     </span>
   )
