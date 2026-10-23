@@ -36,19 +36,6 @@ function isBranchPaused(data: AppData, branchId: string) {
   return false
 }
 
-function mergeCalendar(previous: Task["calendar"], next: Task["calendar"]) {
-  if (!previous || !next || previous.at !== next.at) return next
-  return {
-    ...next,
-    reminders: {
-      week: { ...next.reminders.week, sentAt: previous.reminders.week.sentAt },
-      three_days: { ...next.reminders.three_days, sentAt: previous.reminders.three_days.sentAt },
-      day: { ...next.reminders.day, sentAt: previous.reminders.day.sentAt },
-      same_day: { ...next.reminders.same_day, sentAt: previous.reminders.same_day.sentAt },
-    },
-  }
-}
-
 export async function createTask(input: unknown) {
   const values = taskInputSchema.parse(input)
   if (values.status === "paused") throw new Error("Статус «На паузе» нельзя поставить вручную")
@@ -90,7 +77,7 @@ export async function updateTask(id: string, input: unknown) {
     ...existing,
     ...values,
     status,
-    calendar: status === "calendar" ? mergeCalendar(existing.calendar, values.calendar) : null,
+    calendar: status === "calendar" ? values.calendar : null,
     updatedAt: now,
     completedAt: status === "done" ? existing.completedAt ?? now : null,
     dailyStatus: status === "in_progress" ? existing.dailyStatus : null,

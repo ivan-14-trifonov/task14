@@ -86,6 +86,99 @@ type TooltipState = {
   y: number
 } | null
 
+type CalendarDay = {
+  key: string
+  dayNumber: string
+  month: string
+  weekday: string
+  tasks: Task[]
+}
+
+function addDays(dateKey: string, amount: number) {
+  const date = new Date(`${dateKey}T12:00:00Z`)
+  date.setUTCDate(date.getUTCDate() + amount)
+  return date.toISOString().slice(0, 10)
+}
+
+function buildCalendarDays(data: AppData, today: string): CalendarDay[] {
+  const calendarTasks = Object.values(data.tasks)
+    .filter((task) => task.status === "calendar" && task.calendar)
+    .sort((a, b) => a.sort - b.sort || a.title.localeCompare(b.title, "ru"))
+
+  return Array.from({ length: 7 }, (_, index) => {
+    const key = addDays(today, index)
+    const date = new Date(`${key}T12:00:00Z`)
+    return {
+      key,
+      dayNumber: new Intl.DateTimeFormat("ru-RU", { day: "numeric", timeZone: "UTC" }).format(date),
+      month: new Intl.DateTimeFormat("ru-RU", { month: "short", timeZone: "UTC" }).format(date).replace(".", ""),
+      weekday: new Intl.DateTimeFormat("ru-RU", { weekday: "short", timeZone: "UTC" }).format(date).replace(".", ""),
+      tasks: calendarTasks.filter((task) => task.calendar?.at === key),
+    }
+  })
+}
+
+function CalendarWeek({ data, today }: { data: AppData; today: string }) {
+  const days = buildCalendarDays(data, today)
+  const firstEventDay = days.find((day) => day.tasks.length)?.key ?? today
+  const [selectedDay, setSelectedDay] = useState(firstEventDay)
+  const selected = days.find((day) => day.key === selectedDay) ?? days[0]
+
+  return (
+    <section className="overflow-hidden rounded-xl border bg-white shadow-sm" aria-label="События на ближайшие семь дней">
+      <div className="grid grid-cols-7 border-b">
+        {days.map((day) => {
+          const isSelected = day.key === selected.key
+          return (
+            <button
+              key={day.key}
+              type="button"
+              onClick={() => setSelectedDay(day.key)}
+              className={cn(
+                "flex min-w-0 flex-col items-center gap-1 border-r px-1 py-3 text-center transition last:border-r-0 hover:bg-blue-50 sm:px-3",
+                isSelected && "bg-blue-600 text-white hover:bg-blue-600",
+              )}
+              aria-pressed={isSelected}
+              aria-label={`${day.weekday}, ${day.dayNumber} ${day.month}, событий: ${day.tasks.length}`}
+            >
+              <span className={cn("text-[10px] font-semibold uppercase tracking-wide sm:text-xs", isSelected ? "text-blue-100" : "text-muted-foreground")}>
+                {day.weekday}
+              </span>
+              <span className="text-xl font-bold leading-none sm:text-2xl">{day.dayNumber}</span>
+              <span className={cn("text-[10px] sm:text-xs", isSelected ? "text-blue-100" : "text-muted-foreground")}>{day.month}</span>
+              <span className="flex min-h-2 max-w-full flex-wrap items-center justify-center gap-0.5" aria-hidden="true">
+                {day.tasks.map((task) => (
+                  <span key={task.id} className={cn("size-1.5 rounded-full", isSelected ? "bg-white" : "bg-cyan-500")} />
+                ))}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+
+      <div className="min-h-14 px-4 py-3">
+        {selected.tasks.length ? (
+          <ul className="grid gap-2">
+            {selected.tasks.map((task) => (
+              <li key={task.id}>
+                <Link
+                  href={`/branches/${task.branchId}#task-${task.id}`}
+                  className="flex items-start gap-2 rounded-md text-sm font-medium transition hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                >
+                  <span className="mt-1.5 size-2 shrink-0 rounded-full bg-cyan-500" aria-hidden="true" />
+                  <span className="min-w-0 break-words">{task.title}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-muted-foreground">На этот день событий нет</p>
+        )}
+      </div>
+    </section>
+  )
+}
+
 function getVisibleChildren(data: AppData, parentId: string | null, showAll: boolean) {
   return getChildren(data, parentId).filter((branch) => showAll || branch.status !== "paused")
 }
@@ -423,7 +516,7 @@ function buildMindMapLayout(data: AppData, showAll: boolean) {
   }
 }
 
-export function MindMap({ data }: { data: AppData }) {
+export function MindMap({ data, today }: { data: AppData; today: string }) {
   const [showAll, setShowAll] = useState(false)
   const [tooltip, setTooltip] = useState<TooltipState>(null)
   const roots = getChildren(data, null)
@@ -448,7 +541,12 @@ export function MindMap({ data }: { data: AppData }) {
   }, [tooltip])
 
   if (!roots.length) {
-    return <Card className="p-6 text-sm text-muted-foreground">Дерево пустое. Создайте первое направление.</Card>
+    return (
+      <div className="grid gap-4">
+        <CalendarWeek data={data} today={today} />
+        <Card className="p-6 text-sm text-muted-foreground">Дерево пустое. Создайте первое направление.</Card>
+      </div>
+    )
   }
 
   const layout = buildMindMapLayout(data, showAll)
@@ -456,6 +554,10 @@ export function MindMap({ data }: { data: AppData }) {
 
   return (
     <>
+      <div className="mb-4">
+        <CalendarWeek data={data} today={today} />
+      </div>
+
       <label className="mb-2 inline-flex items-center gap-2 text-xs font-medium text-muted-foreground">
         <input
           type="checkbox"

@@ -11,8 +11,6 @@ export type TaskStatus =
   | "paused"
   | "done"
 export type TaskDailyStatus = "worked" | "closed"
-export type CalendarReminderKey = "week" | "three_days" | "day" | "same_day"
-
 export type Branch = {
   id: string
   title: string
@@ -47,13 +45,6 @@ export type Task = {
   } | null
   calendar: {
     at: string
-    reminders: Record<
-      CalendarReminderKey,
-      {
-        enabled: boolean
-        sentAt: string | null
-      }
-    >
   } | null
 }
 

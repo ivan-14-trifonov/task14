@@ -24,19 +24,9 @@ function toMoscowDateKey(value: string) {
   }).format(new Date(value))
 }
 const calendarDateSchema = z.union([dateKeySchema, z.string().datetime().transform(toMoscowDateKey)])
-const calendarReminderSchema = z.object({
-  enabled: z.boolean(),
-  sentAt: z.string().datetime().nullable(),
-})
 const calendarSchema = z
   .object({
     at: calendarDateSchema,
-    reminders: z.object({
-      week: calendarReminderSchema,
-      three_days: calendarReminderSchema,
-      day: calendarReminderSchema,
-      same_day: calendarReminderSchema.optional().default({ enabled: true, sentAt: null }),
-    }),
   })
   .nullable()
 
@@ -100,10 +90,6 @@ export const taskInputSchema = z.object({
   status: taskStatusSchema,
   brainstorm: z.boolean().default(false),
   calendarAt: z.string().trim().default(""),
-  reminderWeek: z.boolean().default(true),
-  reminderThreeDays: z.boolean().default(true),
-  reminderDay: z.boolean().default(true),
-  reminderSameDay: z.boolean().default(true),
 }).superRefine((value, ctx) => {
   if (value.status !== "calendar") return
   if (!dateKeySchema.safeParse(value.calendarAt).success) {
@@ -123,12 +109,6 @@ export const taskInputSchema = z.object({
     value.status === "calendar"
       ? {
           at: value.calendarAt,
-          reminders: {
-            week: { enabled: value.reminderWeek, sentAt: null },
-            three_days: { enabled: value.reminderThreeDays, sentAt: null },
-            day: { enabled: value.reminderDay, sentAt: null },
-            same_day: { enabled: value.reminderSameDay, sentAt: null },
-          },
         }
       : null,
 }))

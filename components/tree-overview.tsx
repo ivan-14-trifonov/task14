@@ -9,7 +9,7 @@ import { MindMap } from "@/components/mind-map"
 import { Card } from "@/components/ui"
 import type { AppData } from "@/types"
 
-export function TreeOverview({ data, view = "tree" }: { data: AppData; view?: "tree" | "mind-map" }) {
+export function TreeOverview({ data, view = "tree", today }: { data: AppData; view?: "tree" | "mind-map"; today: string }) {
   const roots = getChildren(data, null)
   const isMindMap = view === "mind-map"
 
@@ -40,7 +40,7 @@ export function TreeOverview({ data, view = "tree" }: { data: AppData; view?: "t
           </div>
         </div>
         {isMindMap ? (
-          <MindMap data={data} />
+          <MindMap data={data} today={today} />
         ) : roots.length ? (
           <BranchSortableList ids={roots.map((branch) => branch.id)} parentId={null} className="grid gap-4 md:grid-cols-2">
             {roots.map((branch) => (

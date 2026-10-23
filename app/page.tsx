@@ -2,6 +2,7 @@ import { AppShell } from "@/components/app-shell"
 import { TreeOverview } from "@/components/tree-overview"
 import { requireAdmin } from "@/lib/auth"
 import { getDataForPage } from "@/lib/data/queries"
+import { getTodayKey } from "@/lib/data/daily"
 
 export default async function HomePage({
   searchParams,
@@ -15,7 +16,7 @@ export default async function HomePage({
 
   return (
     <AppShell session={session}>
-      <TreeOverview data={data} view={view} />
+      <TreeOverview data={data} view={view} today={getTodayKey()} />
     </AppShell>
   )
 }

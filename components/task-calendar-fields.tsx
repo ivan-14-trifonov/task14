@@ -20,7 +20,6 @@ function toDateInputValue(value?: string | null) {
 export function TaskCalendarFields({ task }: { task?: Task }) {
   const [status, setStatus] = useState<TaskStatus>(task?.status ?? "planned")
   const [calendarAt, setCalendarAt] = useState(() => toDateInputValue(task?.calendar?.at))
-  const reminders = task?.calendar?.reminders
 
   return (
     <>
@@ -57,25 +56,6 @@ export function TaskCalendarFields({ task }: { task?: Task }) {
               onChange={(event) => setCalendarAt(event.target.value)}
             />
           </Label>
-          <div className="grid gap-2 text-sm">
-            <span className="font-medium">Напоминания</span>
-            <label className="flex items-center gap-2 text-muted-foreground">
-              <input type="checkbox" name="reminderWeek" defaultChecked={reminders?.week.enabled ?? true} />
-              За неделю
-            </label>
-            <label className="flex items-center gap-2 text-muted-foreground">
-              <input type="checkbox" name="reminderThreeDays" defaultChecked={reminders?.three_days.enabled ?? true} />
-              За 3 дня
-            </label>
-            <label className="flex items-center gap-2 text-muted-foreground">
-              <input type="checkbox" name="reminderDay" defaultChecked={reminders?.day.enabled ?? true} />
-              За 1 день
-            </label>
-            <label className="flex items-center gap-2 text-muted-foreground">
-              <input type="checkbox" name="reminderSameDay" defaultChecked={reminders?.same_day.enabled ?? true} />
-              В день события
-            </label>
-          </div>
         </div>
       ) : null}
     </>
