@@ -19,6 +19,7 @@ const NODE_LINE_HEIGHT = 16
 const NODE_VERTICAL_PADDING = 8
 const HORIZONTAL_GAP = 36
 const VERTICAL_GAP = 10
+const PENULTIMATE_VERTICAL_PADDING = VERTICAL_GAP
 const ROOT_GAP = 16
 const CENTER_SIZE = 88
 const MAP_PADDING = 24
@@ -315,13 +316,17 @@ function buildBranchLayout(branch: Branch, data: AppData, showAll: boolean): Bra
   const nodeHeight = estimateBranchNodeHeight(branch, nodeWidth)
   const childrenHeight = getStackHeight(childItems, VERTICAL_GAP)
   const childrenWidth = childItems.length ? Math.max(...childItems.map((child) => child.width)) : 0
+  const isPenultimateBranch = children.length > 0 && children.every((child) => child.children.length === 0)
+  const contentHeight = Math.max(nodeHeight, childrenHeight)
 
   return {
     branch,
     children,
     periodTasks,
     todayTasks,
-    height: Math.max(nodeHeight, childrenHeight),
+    // Дополнительные поля сверху и снизу увеличивают обычный интервал
+    // между предпоследними ветками с 10 до 30 пикселей на любом уровне дерева.
+    height: contentHeight + (isPenultimateBranch ? PENULTIMATE_VERTICAL_PADDING * 2 : 0),
     nodeHeight,
     nodeWidth,
     width: nodeWidth + (childItems.length ? HORIZONTAL_GAP + childrenWidth : 0),
