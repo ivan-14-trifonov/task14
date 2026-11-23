@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import { Pause, Pencil, Play, Plus } from "lucide-react"
 import { AppShell } from "@/components/app-shell"
 import { BranchCounts } from "@/components/branch-counts"
+import { BranchHabits } from "@/components/branch-habits"
 import { BranchForm } from "@/components/branch-form"
 import { BranchTag } from "@/components/branch-tag"
 import { BranchTimingBadge } from "@/components/branch-timing-badge"
@@ -17,6 +18,7 @@ import { Card, LinkButton } from "@/components/ui"
 import { requireAdmin } from "@/lib/auth"
 import { deleteBranchAction, pauseBranchAction, resumeBranchAction } from "@/lib/data/actions"
 import { getBranchCountTasks, getBranchTaskCounts } from "@/lib/data/counts"
+import { getBranchHabits } from "@/lib/data/habits"
 import { getTaskDailyState } from "@/lib/data/daily"
 import { getDataForPage, getFilteredTasks } from "@/lib/data/queries"
 import { getBranchPath, getChildren } from "@/lib/data/tree"
@@ -79,6 +81,7 @@ export default async function BranchPage({
   const branch = data.branches[id]
   if (!branch) notFound()
 
+  const habits = getBranchHabits(id, data)
   const children = getChildren(data, id)
   const branchCounts = getBranchTaskCounts(id, data)
   const branchCountTasks = getBranchCountTasks(id, data)
@@ -144,6 +147,7 @@ export default async function BranchPage({
                 brainstorm={branchCounts.brainstorm}
                 planned={branchCounts.planned}
                 tasks={branchCountTasks}
+                habits={habits}
               />
             </div>
           </div>
@@ -197,7 +201,7 @@ export default async function BranchPage({
               id={id}
               action={deleteBranchAction}
               title="Подтвердить удаление"
-              text="Пустая ветка будет удалена. Если в ней есть задачи или подветки, операция будет остановлена."
+              text="Пустая ветка будет удалена. Если в ней есть задачи, привычки или подветки, операция будет остановлена."
             />
           </div>
         </div>
@@ -214,6 +218,8 @@ export default async function BranchPage({
         ) : null}
 
         <BranchTimingForm branch={branch} />
+
+        <BranchHabits branchId={id} habits={habits} />
 
         <div className="grid gap-3">
           <h2 className="text-lg font-semibold">Подветки</h2>
@@ -244,6 +250,7 @@ export default async function BranchPage({
                             brainstorm={childCounts.brainstorm}
                             planned={childCounts.planned}
                             tasks={childCountTasks}
+                            habits={getBranchHabits(child.id, data)}
                           />
                         </div>
                       </div>

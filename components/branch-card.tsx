@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Folder, Pencil, Plus } from "lucide-react"
 import { getDirectBranchCountTasks, getDirectBranchTaskCounts } from "@/lib/data/counts"
+import { getBranchHabits } from "@/lib/data/habits"
 import { getChildren } from "@/lib/data/tree"
 import { BranchCounts } from "@/components/branch-counts"
 import { BranchDisclosure } from "@/components/branch-disclosure"
@@ -44,6 +45,7 @@ export function BranchCard({ branch, data }: { branch: Branch; data: AppData }) 
               brainstorm={counts.brainstorm}
               planned={counts.planned}
               tasks={countTasks}
+              habits={getBranchHabits(branch.id, data)}
             />
           </div>
         </Link>
@@ -103,6 +105,7 @@ function BranchTreeNode({ branch, data }: { branch: Branch; data: AppData }) {
             brainstorm={counts.brainstorm}
             planned={counts.planned}
             tasks={countTasks}
+            habits={getBranchHabits(branch.id, data)}
             compact
           />
         </div>

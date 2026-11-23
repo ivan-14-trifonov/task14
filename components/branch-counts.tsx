@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react"
 import { BrainstormIcon } from "@/components/brainstorm-icon"
 import { DelegatedIcon } from "@/components/delegated-icon"
 import { cn, formatCalendarDate } from "@/lib/utils"
-import type { Task } from "@/types"
+import { HabitCount, HabitPreview } from "@/components/habit-indicators"
+import type { Habit, Task } from "@/types"
 
 const TOOLTIP_WIDTH = 256
 const TOOLTIP_ESTIMATED_HEIGHT = 180
@@ -26,6 +27,7 @@ export function BranchCounts({
   brainstorm,
   planned,
   tasks = [],
+  habits = [],
   compact = false,
 }: {
   inProgress: number
@@ -38,6 +40,7 @@ export function BranchCounts({
   brainstorm: number
   planned: number
   tasks?: Task[]
+  habits?: Habit[]
   compact?: boolean
 }) {
   const rootRef = useRef<HTMLDivElement>(null)
@@ -54,8 +57,10 @@ export function BranchCounts({
       task.brainstorm,
   )
 
+  const hasTooltip = tooltipTasks.length > 0 || habits.length > 0
+
   function showTooltip(element: HTMLDivElement) {
-    if (!tooltipTasks.length) return
+    if (!hasTooltip) return
     const rect = element.getBoundingClientRect()
     const viewportWidth = window.innerWidth
     const preferredX = rect.left + rect.width / 2
@@ -72,7 +77,7 @@ export function BranchCounts({
   }
 
   function toggleTooltip(element: HTMLDivElement) {
-    if (!tooltipTasks.length) return
+    if (!hasTooltip) return
     if (tooltipPosition) {
       setTooltipPosition(null)
       return
@@ -109,7 +114,8 @@ export function BranchCounts({
     calendar === 0 &&
     uncontrolled === 0 &&
     brainstorm === 0 &&
-    planned === 0
+    planned === 0 &&
+    habits.length === 0
   ) return null
 
   return (
@@ -130,8 +136,8 @@ export function BranchCounts({
           event.stopPropagation()
           toggleTooltip(event.currentTarget)
         }}
-        role={tooltipTasks.length ? "button" : undefined}
-        tabIndex={tooltipTasks.length ? 0 : undefined}
+        role={hasTooltip ? "button" : undefined}
+        tabIndex={hasTooltip ? 0 : undefined}
         onKeyDown={(event) => {
           if (event.key !== "Enter" && event.key !== " ") return
           event.preventDefault()
@@ -205,6 +211,7 @@ export function BranchCounts({
             {brainstorm}
           </span>
         ) : null}
+        {habits.length ? <HabitCount count={habits.length} /> : null}
         {planned ? (
           <span
             className="inline-flex min-w-4 items-center justify-center rounded-full bg-slate-200 px-1 text-[10px] font-bold leading-4 text-slate-600"
@@ -214,9 +221,9 @@ export function BranchCounts({
           </span>
         ) : null}
       </div>
-      {tooltipTasks.length && tooltipPosition ? (
+      {hasTooltip && tooltipPosition ? (
         <div
-          className="pointer-events-none fixed z-[9999] w-64 -translate-x-1/2 rounded-md border bg-white px-4 py-3 text-left text-xs shadow-2xl"
+          className="pointer-events-none fixed z-[9999] w-64 space-y-2 -translate-x-1/2 rounded-md border bg-white px-4 py-3 text-left text-xs shadow-2xl"
           style={{ left: tooltipPosition.x, top: tooltipPosition.y }}
         >
           <ul className="space-y-1 text-muted-foreground">
@@ -249,6 +256,7 @@ export function BranchCounts({
               </li>
             ))}
           </ul>
+          <HabitPreview habits={habits} />
         </div>
       ) : null}
     </>

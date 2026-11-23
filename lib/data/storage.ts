@@ -32,6 +32,7 @@ function emptyData(now = new Date().toISOString()): AppData {
     version: 1,
     branches: {},
     tasks: {},
+    habits: {},
     meta: {
       createdAt: now,
       updatedAt: now,
@@ -89,6 +90,7 @@ async function backupCurrentData() {
     access: "private",
     contentType: "application/json",
     allowOverwrite: false,
+    addRandomSuffix: true,
   })
   await pruneBackups()
 }

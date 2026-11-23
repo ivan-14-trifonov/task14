@@ -73,10 +73,22 @@ export const taskSchema = z.object({
   calendar: calendarSchema.optional().default(null),
 })
 
+export const habitStatusSchema = z.enum(["planned", "in_progress", "formed"])
+export const habitInputSchema = z.object({
+  title: z.string().trim().min(1, "Укажите название"),
+  comment: z.string().trim().default(""),
+})
+const habitSchema = habitInputSchema.extend({
+  id: z.string().min(1),
+  branchId: z.string().min(1),
+  status: habitStatusSchema,
+})
+
 export const appDataSchema = z.object({
   version: z.literal(1),
   branches: z.record(branchSchema),
   tasks: z.record(taskSchema),
+  habits: z.record(habitSchema).default({}),
   meta: z.object({
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),

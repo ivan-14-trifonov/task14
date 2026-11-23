@@ -10,7 +10,9 @@ import { DelegatedIcon } from "@/components/delegated-icon"
 import { BranchStatusDot } from "@/components/status-badge"
 import { Card } from "@/components/ui"
 import { cn, formatCalendarDate } from "@/lib/utils"
-import type { AppData, Branch, Task } from "@/types"
+import { HabitCount, HabitPreview } from "@/components/habit-indicators"
+import { getBranchHabits } from "@/lib/data/habits"
+import type { AppData, Branch, Habit, Task } from "@/types"
 
 const NODE_MIN_WIDTH = 160
 const NODE_MAX_WIDTH = 260
@@ -31,6 +33,7 @@ type BranchLayout = {
   children: BranchLayout[]
   periodTasks: Task[]
   todayTasks: Task[]
+  habits: Habit[]
   height: number
   nodeHeight: number
   nodeWidth: number
@@ -43,6 +46,7 @@ type MapNode =
       kind: "branch"
       branch: Branch
       tasks: Task[]
+      habits: Habit[]
       parentId: string | null
       depth: number
       side: Side
@@ -83,8 +87,12 @@ type MapEdge = {
 
 type TooltipState = {
   tasks: Task[]
+  habits: Habit[]
   x: number
   y: number
+  above: boolean
+  maxHeight: number
+  pinned: boolean
 } | null
 
 type CalendarDay = {
@@ -245,7 +253,7 @@ function estimateTextNodeHeight(text: string, extraLength = 0, width = NODE_MIN_
   return Math.max(NODE_MIN_HEIGHT, lines * NODE_LINE_HEIGHT + NODE_VERTICAL_PADDING)
 }
 
-function estimateBranchNodeWidth(branch: Branch, tasks: Task[], showAll: boolean) {
+function estimateBranchNodeWidth(branch: Branch, tasks: Task[], habitCount: number, showAll: boolean) {
   const indicatorCount = [
     tasks.some((task) => task.status === "in_progress"),
     tasks.some((task) => task.status === "uncontrolled"),
@@ -257,7 +265,7 @@ function estimateBranchNodeWidth(branch: Branch, tasks: Task[], showAll: boolean
     Boolean(branch.timing),
     branch.status === "in_progress",
   ].filter(Boolean).length
-  const visibleLength = branch.title.length + indicatorCount * 3
+  const visibleLength = branch.title.length + indicatorCount * 3 + (habitCount ? 4 + String(habitCount).length : 0)
   const overflow = Math.max(0, visibleLength - getTextCharsPerLine(NODE_MIN_WIDTH))
   return Math.min(NODE_MAX_WIDTH, NODE_MIN_WIDTH + overflow * 9)
 }
@@ -299,7 +307,8 @@ function buildBranchLayout(branch: Branch, data: AppData, showAll: boolean): Bra
   const periodTasks = getPeriodTasks(branch.id, data)
   const todayTasks = getTodayTasks(branch.id, data)
   const mapTasks = getBranchMapTasks(branch.id, data, showAll)
-  const nodeWidth = estimateBranchNodeWidth(branch, mapTasks, showAll)
+  const habits = getBranchHabits(branch.id, data)
+  const nodeWidth = estimateBranchNodeWidth(branch, mapTasks, habits.length, showAll)
   const todayTaskLayouts = todayTasks.map((task) => {
     const width = estimateTaskNodeWidth(task)
     return { height: estimateTaskNodeHeight(task, width), width }
@@ -324,6 +333,7 @@ function buildBranchLayout(branch: Branch, data: AppData, showAll: boolean): Bra
     children,
     periodTasks,
     todayTasks,
+    habits,
     // Дополнительные поля сверху и снизу увеличивают обычный интервал
     // между предпоследними ветками с 10 до 30 пикселей на любом уровне дерева.
     height: contentHeight + (isPenultimateBranch ? PENULTIMATE_VERTICAL_PADDING * 2 : 0),
@@ -361,6 +371,7 @@ function placeBranchLayout({
     kind: "branch",
     branch: layout.branch,
     tasks: getBranchMapTasks(layout.branch.id, data, showAll),
+    habits: layout.habits,
     parentId,
     depth,
     side,
@@ -576,7 +587,7 @@ export function MindMap({ data, today }: { data: AppData; today: string }) {
         Показать всё
       </label>
 
-      <div className="overflow-auto rounded-lg border bg-white p-2">
+      <div className="overflow-auto rounded-lg border bg-white p-2" onScroll={() => setTooltip(null)}>
         <div className="relative" style={{ width: layout.width, height: layout.height }}>
           <svg className="absolute inset-0" width={layout.width} height={layout.height} aria-hidden="true">
             {layout.edges.map((edge) => {
@@ -616,13 +627,14 @@ export function MindMap({ data, today }: { data: AppData; today: string }) {
                 key={node.id}
                 branch={node.branch}
                 tasks={node.tasks}
+                habits={node.habits}
                 showAll={showAll}
                 depth={node.depth}
                 height={node.height}
                 width={node.width}
                 x={node.x}
                 y={node.y}
-                onTooltipChange={setTooltip}
+                onTooltipChange={(next) => setTooltip((current) => current?.pinned && !next?.pinned ? current : next)}
               />
               )
             }
@@ -636,9 +648,18 @@ export function MindMap({ data, today }: { data: AppData; today: string }) {
 
       {tooltip ? (
         <div
-          className="pointer-events-none fixed z-[9999] w-64 -translate-x-1/2 rounded-md border bg-white px-4 py-3 text-left text-xs shadow-2xl"
-          style={{ left: tooltip.x, top: tooltip.y }}
+          className={cn(
+            "fixed z-[9999] w-64 -translate-x-1/2 space-y-2 overflow-y-auto rounded-md border bg-white px-4 py-3 text-left text-xs shadow-2xl",
+            !tooltip.pinned && "pointer-events-none",
+          )}
+          style={{
+            left: tooltip.x,
+            [tooltip.above ? "bottom" : "top"]: tooltip.y,
+            maxHeight: tooltip.maxHeight,
+          }}
+          onPointerDown={(event) => event.stopPropagation()}
         >
+          <HabitPreview habits={tooltip.habits} />
           <ul className="space-y-1 text-muted-foreground">
             {tooltip.tasks.map((task) => (
               <li key={task.id} className="flex gap-2">
@@ -677,6 +698,7 @@ export function MindMap({ data, today }: { data: AppData; today: string }) {
 function BranchBubble({
   branch,
   tasks,
+  habits,
   showAll,
   depth,
   height,
@@ -687,6 +709,7 @@ function BranchBubble({
 }: {
   branch: Branch
   tasks: Task[]
+  habits: Habit[]
   showAll: boolean
   depth: number
   height: number
@@ -713,13 +736,20 @@ function BranchBubble({
   const brainstormCount = tasks.filter((task) => task.brainstorm && task.status !== "done").length
   const pausedCount = showAll ? tasks.filter((task) => task.status === "paused").length : 0
 
-  function showTooltip(element: HTMLElement) {
-    if (!visibleTasks.length) return
+  function showTooltip(element: HTMLElement, pinned = false) {
+    if (!visibleTasks.length && !habits.length) return
     const rect = element.getBoundingClientRect()
+    const spaceBelow = window.innerHeight - rect.bottom - 16
+    const spaceAbove = rect.top - 16
+    const above = spaceBelow < 240 && spaceAbove > spaceBelow
     onTooltipChange({
       tasks: visibleTasks,
-      x: rect.left + rect.width / 2,
-      y: rect.bottom + 8,
+      habits,
+      x: Math.max(136, Math.min(window.innerWidth - 136, rect.left + rect.width / 2)),
+      y: above ? window.innerHeight - rect.top + 8 : rect.bottom + 8,
+      above,
+      maxHeight: Math.max(48, Math.min(360, above ? spaceAbove : spaceBelow)),
+      pinned,
     })
   }
 
@@ -753,7 +783,7 @@ function BranchBubble({
           onClick={(event) => {
             event.preventDefault()
             event.stopPropagation()
-            showTooltip(event.currentTarget)
+            showTooltip(event.currentTarget, true)
           }}
           onPointerDown={(event) => event.stopPropagation()}
         >
@@ -805,6 +835,7 @@ function BranchBubble({
               {brainstormCount}
             </span>
           ) : null}
+          {habits.length ? <HabitCount count={habits.length} /> : null}
           {pausedCount ? (
             <span className="inline-flex min-w-4 items-center justify-center rounded-full bg-yellow-500 px-1 text-[10px] font-bold leading-4 text-white">
               {pausedCount}

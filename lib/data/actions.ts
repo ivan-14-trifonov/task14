@@ -94,6 +94,41 @@ export async function closeTaskForTodayAction(formData: FormData) {
   refresh()
 }
 
+function habitInputFromForm(formData: FormData) {
+  return { title: getString(formData, "title"), comment: getString(formData, "comment") }
+}
+
+function refreshHabits(branchId: string) {
+  revalidatePath("/")
+  revalidatePath(`/branches/${branchId}`)
+}
+
+export async function createHabitAction(branchId: string, formData: FormData) {
+  await requireAdmin()
+  await mutations.createHabit(branchId, habitInputFromForm(formData))
+  refreshHabits(branchId)
+}
+
+export async function updateHabitAction(branchId: string, id: string, formData: FormData) {
+  await requireAdmin()
+  await mutations.updateHabit(id, habitInputFromForm(formData))
+  refreshHabits(branchId)
+}
+
+export async function setHabitStatusAction(branchId: string, id: string, formData: FormData) {
+  await requireAdmin()
+  await mutations.changeHabitStatus(id, getString(formData, "status"))
+  refreshHabits(branchId)
+}
+
+export async function deleteHabitAction(formData: FormData) {
+  await requireAdmin()
+  const id = getString(formData, "id")
+  await mutations.deleteHabit(id)
+  revalidatePath("/")
+  revalidatePath("/branches/[id]", "page")
+}
+
 export async function createBranchAction(formData: FormData) {
   await requireAdmin()
   const data = await mutations.createBranch(branchInputFromForm(formData))

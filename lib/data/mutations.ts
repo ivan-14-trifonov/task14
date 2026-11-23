@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid"
-import { branchInputSchema, taskDailyStatusSchema, taskInputSchema, taskStatusSchema } from "@/lib/data/schema"
+import { branchInputSchema, habitInputSchema, habitStatusSchema, taskDailyStatusSchema, taskInputSchema, taskStatusSchema } from "@/lib/data/schema"
 import { getTodayKey } from "@/lib/data/daily"
 import { readData, writeData } from "@/lib/data/storage"
 import { getDescendantBranchIds, wouldCreateCycle } from "@/lib/data/tree"
@@ -132,6 +132,42 @@ export async function deleteTask(id: string) {
   return writeData({ ...data, tasks })
 }
 
+export async function createHabit(branchId: string, input: unknown) {
+  const values = habitInputSchema.parse(input)
+  const data = await readData()
+  if (!data.branches[branchId]) throw new Error("Выбранная ветка не найдена")
+  const id = nanoid()
+  return writeData({
+    ...data,
+    habits: { ...data.habits, [id]: { ...values, id, branchId, status: "planned" } },
+  })
+}
+
+export async function updateHabit(id: string, input: unknown) {
+  const values = habitInputSchema.parse(input)
+  const data = await readData()
+  const habit = data.habits[id]
+  if (!habit) throw new Error("Привычка не найдена")
+  return writeData({ ...data, habits: { ...data.habits, [id]: { ...habit, ...values } } })
+}
+
+export async function changeHabitStatus(id: string, input: unknown) {
+  const status = habitStatusSchema.parse(input)
+  const data = await readData()
+  const habit = data.habits[id]
+  if (!habit) throw new Error("Привычка не найдена")
+  if (habit.status === status) return data
+  return writeData({ ...data, habits: { ...data.habits, [id]: { ...habit, status } } })
+}
+
+export async function deleteHabit(id: string) {
+  const data = await readData()
+  if (!data.habits[id]) return data
+  const habits = { ...data.habits }
+  delete habits[id]
+  return writeData({ ...data, habits })
+}
+
 export async function createBranch(input: unknown) {
   const values = branchInputSchema.parse(input)
   const data = await readData()
@@ -200,15 +236,17 @@ export async function deleteBranch(id: string) {
   const branchTasks = Object.values(data.tasks).filter((task) => task.branchId === id)
   const activeTasksCount = branchTasks.filter((task) => task.status !== "done").length
   const archivedTasksCount = branchTasks.filter((task) => task.status === "done").length
-  if (childrenCount || branchTasks.length) {
+  const habitsCount = Object.values(data.habits).filter((habit) => habit.branchId === id).length
+  if (childrenCount || branchTasks.length || habitsCount) {
     const details = [
+      habitsCount ? `привычки: ${habitsCount}` : null,
       childrenCount ? `подветки: ${childrenCount}` : null,
       activeTasksCount ? `активные задачи: ${activeTasksCount}` : null,
       archivedTasksCount ? `задачи в архиве: ${archivedTasksCount}` : null,
     ]
       .filter(Boolean)
       .join(", ")
-    throw new Error(`Нельзя удалить ветку, пока в ней есть задачи или подветки${details ? ` (${details})` : ""}`)
+    throw new Error(`Нельзя удалить ветку, пока в ней есть задачи, привычки или подветки${details ? ` (${details})` : ""}`)
   }
   const branches = { ...data.branches }
   delete branches[id]

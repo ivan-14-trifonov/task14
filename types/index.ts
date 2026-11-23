@@ -48,10 +48,21 @@ export type Task = {
   } | null
 }
 
+export type HabitStatus = "planned" | "in_progress" | "formed"
+
+export type Habit = {
+  id: string
+  branchId: string
+  title: string
+  comment: string
+  status: HabitStatus
+}
+
 export type AppData = {
   version: number
   branches: Record<string, Branch>
   tasks: Record<string, Task>
+  habits: Record<string, Habit>
   meta: {
     createdAt: string
     updatedAt: string
