@@ -1,9 +1,18 @@
 import { CalendarDays, Download, FolderTree, Network, UserRoundCheck } from "lucide-react"
 import { SignOutButton } from "@/components/auth-buttons"
 import { LinkButton } from "@/components/ui"
+import { cn } from "@/lib/utils"
 import type { Session } from "next-auth"
 
-export function AppShell({ children, session }: { children: React.ReactNode; session: Session }) {
+export function AppShell({
+  children,
+  session,
+  fullWidth = false,
+}: {
+  children: React.ReactNode
+  session: Session
+  fullWidth?: boolean
+}) {
   return (
     <main className="min-h-screen">
       <header className="border-b bg-white">
@@ -37,7 +46,7 @@ export function AppShell({ children, session }: { children: React.ReactNode; ses
           </nav>
         </div>
       </header>
-      <div className="mx-auto max-w-6xl px-4 py-6">{children}</div>
+      <div className={cn("mx-auto px-4 py-6", !fullWidth && "max-w-6xl")}>{children}</div>
     </main>
   )
 }

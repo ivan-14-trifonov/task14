@@ -1,14 +1,15 @@
 "use client"
 
+import { Minus, Plus } from "lucide-react"
 import Link from "next/link"
-import { useEffect, useState } from "react"
+import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { getChildren } from "@/lib/data/tree"
 import { BranchTimingBadge } from "@/components/branch-timing-badge"
 import { BranchTitle } from "@/components/branch-title"
 import { BrainstormIcon } from "@/components/brainstorm-icon"
 import { DelegatedIcon } from "@/components/delegated-icon"
 import { BranchStatusDot } from "@/components/status-badge"
-import { Card } from "@/components/ui"
+import { Button, Card } from "@/components/ui"
 import { cn, formatCalendarDate } from "@/lib/utils"
 import { HabitCount, HabitPreview } from "@/components/habit-indicators"
 import { getBranchHabits } from "@/lib/data/habits"
@@ -25,6 +26,10 @@ const PENULTIMATE_VERTICAL_PADDING = VERTICAL_GAP
 const ROOT_GAP = 16
 const CENTER_SIZE = 88
 const MAP_PADDING = 24
+const DEFAULT_ZOOM = 100
+const MIN_ZOOM = 25
+const MAX_ZOOM = 200
+const ZOOM_STEP = 25
 
 type Side = "left" | "right"
 
@@ -535,7 +540,38 @@ function buildMindMapLayout(data: AppData, showAll: boolean) {
 export function MindMap({ data, today }: { data: AppData; today: string }) {
   const [showAll, setShowAll] = useState(false)
   const [tooltip, setTooltip] = useState<TooltipState>(null)
+  const [zoom, setZoom] = useState(DEFAULT_ZOOM)
+  const viewportRef = useRef<HTMLDivElement>(null)
+  const canvasRef = useRef<HTMLDivElement>(null)
+  const zoomAnchorX = useRef<number>(null)
   const roots = getChildren(data, null)
+
+  useLayoutEffect(() => {
+    const viewport = viewportRef.current
+    const canvas = canvasRef.current
+    const anchor = zoomAnchorX.current
+    if (!viewport || !canvas || anchor === null) return
+
+    const viewportCenter = viewport.getBoundingClientRect().left + viewport.clientWidth / 2
+    const canvasLeft = canvas.getBoundingClientRect().left
+    viewport.scrollLeft += canvasLeft + anchor * (zoom / 100) - viewportCenter
+    zoomAnchorX.current = null
+  }, [zoom])
+
+  function changeZoom(value: number) {
+    const nextZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, value))
+    if (nextZoom === zoom) return
+    const viewport = viewportRef.current
+    const canvas = canvasRef.current
+    if (viewport && canvas) {
+      const viewportCenter = viewport.getBoundingClientRect().left + viewport.clientWidth / 2
+      const canvasBounds = canvas.getBoundingClientRect()
+      const offset = Math.min(canvasBounds.width, Math.max(0, viewportCenter - canvasBounds.left))
+      zoomAnchorX.current = offset / (zoom / 100)
+    }
+    setTooltip(null)
+    setZoom(nextZoom)
+  }
 
   useEffect(() => {
     if (!tooltip) return
@@ -570,25 +606,66 @@ export function MindMap({ data, today }: { data: AppData; today: string }) {
 
   return (
     <>
-      <div className="mb-4">
-        <CalendarWeek data={data} today={today} />
+      <CalendarWeek data={data} today={today} />
+
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <label className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground">
+          <input
+            type="checkbox"
+            checked={showAll}
+            onChange={(event) => {
+              setShowAll(event.target.checked)
+              setTooltip(null)
+            }}
+            className="size-4 rounded border"
+          />
+          Показать всё
+        </label>
+
+        <div role="group" aria-label="Масштаб карты" className="flex items-center gap-1">
+          <Button
+            type="button"
+            variant="secondary"
+            className="size-9 p-0"
+            aria-label="Уменьшить масштаб"
+            disabled={zoom === MIN_ZOOM}
+            onClick={() => changeZoom(zoom - ZOOM_STEP)}
+          >
+            <Minus className="size-4" aria-hidden="true" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            className="min-w-14 tabular-nums"
+            aria-label={`Масштаб ${zoom}%. Вернуть к 100%`}
+            title="Вернуть к 100%"
+            onClick={() => changeZoom(DEFAULT_ZOOM)}
+          >
+            {zoom}%
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            className="size-9 p-0"
+            aria-label="Увеличить масштаб"
+            disabled={zoom === MAX_ZOOM}
+            onClick={() => changeZoom(zoom + ZOOM_STEP)}
+          >
+            <Plus className="size-4" aria-hidden="true" />
+          </Button>
+        </div>
       </div>
 
-      <label className="mb-2 inline-flex items-center gap-2 text-xs font-medium text-muted-foreground">
-        <input
-          type="checkbox"
-          checked={showAll}
-          onChange={(event) => {
-            setShowAll(event.target.checked)
-            setTooltip(null)
-          }}
-          className="size-4 rounded border"
-        />
-        Показать всё
-      </label>
-
-      <div className="overflow-auto rounded-lg border bg-white p-2" onScroll={() => setTooltip(null)}>
-        <div className="relative" style={{ width: layout.width, height: layout.height }}>
+      <div
+        ref={viewportRef}
+        className="min-w-0 overflow-auto rounded-lg border bg-white p-2"
+        onScroll={() => setTooltip(null)}
+      >
+        <div
+          ref={canvasRef}
+          className="relative mx-auto"
+          style={{ width: layout.width, height: layout.height, zoom: zoom / 100 }}
+        >
           <svg className="absolute inset-0" width={layout.width} height={layout.height} aria-hidden="true">
             {layout.edges.map((edge) => {
               const child = nodesById.get(edge.toId)

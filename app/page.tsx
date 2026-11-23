@@ -15,7 +15,7 @@ export default async function HomePage({
   const view = query.view === "tree" ? "tree" : "mind-map"
 
   return (
-    <AppShell session={session}>
+    <AppShell session={session} fullWidth={view === "mind-map"}>
       <TreeOverview data={data} view={view} today={getTodayKey()} />
     </AppShell>
   )
