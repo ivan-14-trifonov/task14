@@ -7,6 +7,7 @@ import { BranchSortableList } from "@/components/branch-sortable-list"
 import { DialogButton } from "@/components/dialog-button"
 import { MindMap } from "@/components/mind-map"
 import { Card } from "@/components/ui"
+import { cn } from "@/lib/utils"
 import type { AppData } from "@/types"
 
 export function TreeOverview({ data, view = "tree", today }: { data: AppData; view?: "tree" | "mind-map"; today: string }) {
@@ -16,7 +17,10 @@ export function TreeOverview({ data, view = "tree", today }: { data: AppData; vi
   return (
     <BranchSortModeProvider>
       <section className="grid gap-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className={cn(
+          "flex flex-wrap items-center justify-between gap-3",
+          isMindMap && "mx-auto w-full max-w-[70rem]",
+        )}>
           <div>
             <h1 className="text-2xl font-semibold">{isMindMap ? "Ментальная карта" : "Дерево"}</h1>
             <p className="text-sm text-muted-foreground">

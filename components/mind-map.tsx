@@ -139,7 +139,7 @@ function CalendarWeek({ data, today }: { data: AppData; today: string }) {
   const selected = days.find((day) => day.key === selectedDay) ?? days[0]
 
   return (
-    <section className="overflow-hidden rounded-xl border bg-white shadow-sm" aria-label="События на ближайшие семь дней">
+    <section className="mx-auto w-full max-w-[70rem] overflow-hidden rounded-xl border bg-white shadow-sm" aria-label="События на ближайшие семь дней">
       <div className="grid grid-cols-7 border-b">
         {days.map((day) => {
           const isSelected = day.key === selected.key
